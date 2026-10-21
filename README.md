@@ -73,3 +73,7 @@ use it, so Neo4j can replace it in Obligatory assignment 5 without changes to co
 Nothing is required. Optional environment variables: `SECRET_KEY` (otherwise a random key is created in
 `instance/secret_key`) and `DATABASE` (path to the SQLite file). See `.env.example`.
 No API keys are used or stored in this repository.
+
+**Neo4j connector for Claude Code (optional, for developers):** `.mcp.json` lets Claude Code query the team's
+Neo4j Aura instance. It reads the instance address from the environment variable `NEO4J_MCP_URL` (how to set it is
+in `.env.example`) and asks you to sign in to Aura the first time. The app itself does not use it.

@@ -138,6 +138,9 @@ planned for plan 3. Log in and log out (decision D6) therefore move into plan 0;
 - **Small additions found while building:** a plain-language 403 message (the default text was technical, seen in the
   browser check); tests no longer write a secret key into `instance/`; the seed script takes the picture folder as a
   parameter so tests do not touch the real `uploads/` folder.
+- **D3 (where controllers find the repositories):** not `current_app.repos` as written above, but the helper
+  `repos()` in `app/controllers/__init__.py`, which reads `current_app.extensions["repositories"]` (Flask's standard
+  place for app-wide objects). Same idea: one factory in `create_app()`, controllers only see `base.py`.
 - **Verification:** 22 tests, also from a fresh clone with only the README commands (Python 3.13); every rule test
   was checked by deliberately breaking a copy of the code; the pages were checked in a browser, including phone width.
 - Everything else (D1-D11, the data model, the folder layout) was built as planned.
