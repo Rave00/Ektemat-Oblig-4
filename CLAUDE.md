@@ -6,7 +6,7 @@ and questions in an admin panel. Synthetic data only.
 
 ## Layout (MVC)
 
-- `app/models/`: domain classes and rules (`domain.py`), and all data access in `repositories/`.
+- `app/models/`: domain classes and rules (`domain.py`), pictures (`images.py`), and all data access in `repositories/`.
   `repositories/base.py` is the interface; `repositories/sqlite/` is the **only** code that touches SQLite.
 - `app/controllers/`: Flask blueprints `shop` (menu, cart), `account` (log in, orders, questions),
   `admin` (staff panel); `security.py` has log in, access rules and CSRF.

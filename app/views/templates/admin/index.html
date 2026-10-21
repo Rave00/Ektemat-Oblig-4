@@ -6,5 +6,8 @@
   <div class="stat"><span class="stat-value">{{ item_count }}</span><span class="stat-label">food items</span></div>
   <div class="stat"><span class="stat-value">{{ published_count }}</span><span class="stat-label">published</span></div>
 </div>
-<p class="muted">Food items and images (plan 1), orders (plan 4) and questions (plan 5) are added here.</p>
+<ul class="admin-links">
+  <li><a href="{{ url_for('admin.items') }}">Food items and pictures</a></li>
+</ul>
+<p class="muted">Orders (plan 4) and questions (plan 5) are added here.</p>
 {% endblock %}

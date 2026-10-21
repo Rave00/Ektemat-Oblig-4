@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Picture preview · Admin · Ekte Mat Online{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{{ url_for('admin.index') }}">Admin</a> / <a href="{{ url_for('admin.items') }}">Food items</a> /
+  <a href="{{ url_for('admin.edit_item', item_id=item.id) }}">{{ item.name }}</a> / Picture preview</p>
+<h1>New picture for {{ item.name }}</h1>
+<p class="muted">Nothing has changed yet. Save the new picture or discard it.</p>
+
+<div class="compare">
+  <figure>
+    <figcaption>Current</figcaption>
+    {% if item.image_path %}<img class="picture" src="{{ url_for('static', filename=item.image_path) }}" alt="Current picture">
+    {% else %}<div class="no-picture">No picture yet</div>{% endif %}
+  </figure>
+  <figure>
+    <figcaption>New</figcaption>
+    <img class="picture" src="{{ url_for('static', filename=new_image) }}" alt="New picture">
+  </figure>
+</div>
+
+<div class="button-row">
+  <form method="post" class="inline" action="{{ url_for('admin.save_image', item_id=item.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="button">Save new picture</button>
+  </form>
+  <form method="post" class="inline" action="{{ url_for('admin.discard_image', item_id=item.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="button secondary">Discard</button>
+  </form>
+</div>
+{% endblock %}

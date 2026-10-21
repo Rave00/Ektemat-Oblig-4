@@ -1,4 +1,7 @@
+import io
+
 import pytest
+from PIL import Image
 from werkzeug.security import generate_password_hash
 
 from app import create_app
@@ -8,7 +11,8 @@ from app.models.domain import FoodItem, User
 @pytest.fixture
 def app(tmp_path):
     """A fresh application with its own empty database file for every test."""
-    app = create_app({"TESTING": True, "SECRET_KEY": "test-key", "DATABASE": str(tmp_path / "test.db"), "CSRF_ENABLED": False})
+    app = create_app({"TESTING": True, "SECRET_KEY": "test-key", "DATABASE": str(tmp_path / "test.db"),
+                      "UPLOAD_FOLDER": str(tmp_path / "uploads"), "CSRF_ENABLED": False})
     app.extensions["repositories"].reset()
     return app
 
@@ -41,3 +45,17 @@ def make_item(**changes):
                   events=["conference"], allergens=["fish", "milk"], labels=[], published=True)
     values.update(changes)
     return FoodItem(**values)
+
+
+def picture(fmt="JPEG", size=(120, 80), colour="red", **save_options):
+    """Bytes of a small, real picture for upload tests."""
+    buffer = io.BytesIO()
+    Image.new("RGB" if fmt != "PNG" else "RGBA", size, colour).save(buffer, fmt, **save_options)
+    return buffer.getvalue()
+
+
+@pytest.fixture
+def admin(client, users):
+    """A test client logged in as the admin."""
+    log_in(client, "admin@test.example")
+    return client

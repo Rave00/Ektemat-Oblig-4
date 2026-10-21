@@ -41,7 +41,11 @@ class FoodItemRepository(ABC):
 
     @abstractmethod
     def delete(self, item_id: int) -> None:
-        """Remove a food item."""
+        """Remove a food item. Callers check is_ordered() first."""
+
+    @abstractmethod
+    def is_ordered(self, item_id: int) -> bool:
+        """True if the item is part of any order (then it must not be deleted, only unpublished)."""
 
 
 class Repositories(ABC):

@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% macro error(field) %}{% if errors.get(field) %}<p class="field-error" id="{{ field }}-error">{{ errors[field] }}</p>{% endif %}{% endmacro %}
+{% macro boxes(name, options, chosen) %}
+  <div class="checks">
+    {% for code, label in options.items() %}
+      <label class="check"><input type="checkbox" name="{{ name }}" value="{{ code }}" {% if code in chosen %}checked{% endif %}> {{ label }}</label>
+    {% endfor %}
+  </div>
+{% endmacro %}
+{% block title %}{{ 'Edit ' ~ item.name if item else 'Add food item' }} · Admin · Ekte Mat Online{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{{ url_for('admin.index') }}">Admin</a> / <a href="{{ url_for('admin.items') }}">Food items</a> /
+  {{ item.name if item else 'New' }}</p>
+<h1>{{ 'Edit food item' if item else 'Add food item' }}</h1>
+{% if errors %}<p class="flash flash-error" role="alert">Please correct the fields marked below.</p>{% endif %}
+
+<div class="edit-layout">
+<form method="post" class="form wide" novalidate
+      action="{{ url_for('admin.edit_item', item_id=item.id) if item else url_for('admin.new_item') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <label for="name">Name</label>
+  <input id="name" name="name" value="{{ values.get('name', '') }}" maxlength="100" required>
+  {{ error('name') }}
+
+  <label for="description">Description</label>
+  <textarea id="description" name="description" rows="3" maxlength="500" required>{{ values.get('description', '') }}</textarea>
+  {{ error('description') }}
+
+  <div class="two-columns">
+    <div>
+      <label for="price_nok">Price per person (NOK)</label>
+      <input id="price_nok" name="price_nok" type="number" min="0" max="100000" step="1" value="{{ values.get('price_nok', '') }}" required>
+      {{ error('price_nok') }}
+    </div>
+    <div>
+      <label for="min_order_qty">Minimum order (portions)</label>
+      <input id="min_order_qty" name="min_order_qty" type="number" min="1" max="1000" step="1" value="{{ values.get('min_order_qty', '') }}" required>
+      {{ error('min_order_qty') }}
+    </div>
+  </div>
+
+  <fieldset>
+    <legend>Events</legend>
+    {{ boxes('events', events, values.get('events', [])) }}
+    {{ error('events') }}
+  </fieldset>
+
+  <fieldset>
+    <legend>Allergens</legend>
+    {{ boxes('allergens', allergens, values.get('allergens', [])) }}
+    <label class="check strong"><input type="checkbox" name="no_allergens" {% if values.get('no_allergens') %}checked{% endif %}>
+      Contains none of the 14 allergens</label>
+    {{ error('allergens') }}
+  </fieldset>
+
+  <fieldset>
+    <legend>Dietary labels</legend>
+    {{ boxes('labels', labels, values.get('labels', [])) }}
+    {{ error('labels') }}
+  </fieldset>
+
+  {% if item %}
+    <label class="check strong"><input type="checkbox" name="published" {% if values.get('published') %}checked{% endif %}>
+      Published (shown on the customer menu)</label>
+    {{ error('published') }}
+  {% else %}
+    <p class="muted small">New food items start hidden. Add a picture after saving, then publish.</p>
+  {% endif %}
+
+  <div class="button-row">
+    <button type="submit" class="button">{{ 'Save changes' if item else 'Add food item' }}</button>
+    <a href="{{ url_for('admin.items') }}">Cancel</a>
+  </div>
+</form>
+
+{% if item %}
+<aside class="panel">
+  <h2>Picture</h2>
+  {% if item.image_path %}
+    <img class="picture" src="{{ url_for('static', filename=item.image_path) }}" alt="Current picture of {{ item.name }}">
+  {% else %}
+    <p class="muted">No picture yet. A picture is needed before the item can be published.</p>
+  {% endif %}
+  <form method="post" enctype="multipart/form-data" class="form" action="{{ url_for('admin.upload_image', item_id=item.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="image">New picture</label>
+    <input id="image" name="image" type="file" accept="image/jpeg,image/png,image/webp" required>
+    <p class="muted small">JPEG, PNG or WebP, at most 2 MB. You will see a preview before anything is saved.</p>
+    <button type="submit" class="button secondary">Upload and preview</button>
+  </form>
+</aside>
+{% endif %}
+</div>
+{% endblock %}

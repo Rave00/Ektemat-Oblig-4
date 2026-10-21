@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS food_items (
     price_nok     INTEGER NOT NULL CHECK (price_nok >= 0),
     min_order_qty INTEGER NOT NULL CHECK (min_order_qty >= 1),
     image_path    TEXT,
+    no_allergens  INTEGER NOT NULL DEFAULT 0 CHECK (no_allergens IN (0, 1)),   -- plan 1, P1-2
     published     INTEGER NOT NULL DEFAULT 0 CHECK (published IN (0, 1)),
     created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
 );

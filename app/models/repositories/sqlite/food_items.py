@@ -21,6 +21,7 @@ def _to_item(row):
     return FoodItem(id=row["id"], name=row["name"], description=row["description"],
                     price_nok=row["price_nok"], min_order_qty=row["min_order_qty"],
                     image_path=row["image_path"], published=bool(row["published"]),
+                    no_allergens=bool(row["no_allergens"]),
                     events=split(row["events"]), allergens=split(row["allergens"]),
                     labels=split(row["labels"]))
 
@@ -41,10 +42,10 @@ class SqliteFoodItemRepository(FoodItemRepository):
     def add(self, item):
         with self.db.connect() as conn:
             cur = conn.execute(
-                "INSERT INTO food_items (name, description, price_nok, min_order_qty, image_path, published) "
-                "VALUES (?, ?, ?, ?, ?, ?)",
+                "INSERT INTO food_items (name, description, price_nok, min_order_qty, image_path, no_allergens, published) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?)",
                 (item.name, item.description, item.price_nok, item.min_order_qty, item.image_path,
-                 int(item.published)))
+                 int(item.no_allergens), int(item.published)))
             self._save_links(conn, cur.lastrowid, item)
             return _to_item(conn.execute(SELECT + " WHERE f.id = ?", (cur.lastrowid,)).fetchone())
 
@@ -52,14 +53,18 @@ class SqliteFoodItemRepository(FoodItemRepository):
         with self.db.connect() as conn:
             conn.execute(
                 "UPDATE food_items SET name = ?, description = ?, price_nok = ?, min_order_qty = ?, "
-                "image_path = ?, published = ? WHERE id = ?",
+                "image_path = ?, no_allergens = ?, published = ? WHERE id = ?",
                 (item.name, item.description, item.price_nok, item.min_order_qty, item.image_path,
-                 int(item.published), item.id))
+                 int(item.no_allergens), int(item.published), item.id))
             self._save_links(conn, item.id, item)
 
     def delete(self, item_id):
         with self.db.connect() as conn:
             conn.execute("DELETE FROM food_items WHERE id = ?", (item_id,))
+
+    def is_ordered(self, item_id):
+        with self.db.connect() as conn:
+            return conn.execute("SELECT 1 FROM order_lines WHERE food_item_id = ? LIMIT 1", (item_id,)).fetchone() is not None
 
     @staticmethod
     def _save_links(conn, item_id, item):
