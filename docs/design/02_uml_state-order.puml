@@ -1,0 +1,51 @@
+@startuml
+' State machine for Order. State names must match the OrderStatus enumeration in the domain model
+' (checked by generators/check_models.py). UML rule: one transition from the initial state, no guard -> choice pseudostate. "Requested" in the lab text = Submitted here (Oblig 4 wording).
+title Order - state machine
+skinparam shadowing false
+hide empty description
+
+state newOrder <<choice>>
+[*] --> newOrder : / register booking request\n(web, or phone via coordinator)
+newOrder --> Submitted : [no company approval needed]
+newOrder --> AwaitingCompanyApproval : [company order above approval limit]
+
+AwaitingCompanyApproval --> Submitted : company approver approves  (US-31)
+AwaitingCompanyApproval --> Cancelled : company approver declines
+
+Submitted --> Approved : coordinator approves [capacity OK]\n/ send confirmation  (US-19)
+Submitted --> Rejected : coordinator rejects\n/ send reason
+Submitted --> Cancelled : customer withdraws
+
+state Approved : change guest count or allergies [before change deadline]\n    / update kitchen view, log OrderChange  (US-12)
+state Approved : 7 days before event / send reminder  (US-13)
+
+Approved --> Cancelled : customer cancels [before event]\n/ apply cancellation terms  (US-15)
+Approved --> Cancelled : deposit not paid [wedding, 7 days after approval]\n/ release the date  (US-35)
+Approved --> InPreparation : event day [allergies confirmed]  (US-23)
+
+InPreparation --> OutForDelivery : all dishes packed [delivery]  (US-29)
+InPreparation --> Delivered : collected [pick-up]  (US-14)
+OutForDelivery --> Delivered : driver marks delivered
+
+Delivered --> Invoiced : sale recorded in Fiken\n[monthly EHF or Vipps]  (US-36, US-37)
+
+Invoiced --> [*]
+Rejected --> [*]
+Cancelled --> [*]
+
+note right of Approved
+  Guest count and allergies can change after
+  approval only until the change deadline.
+  The deadline is an open question (C-02):
+  10:00 the day before (corporate customer)
+  vs. 7 days before (event coordinator).
+  From InPreparation on, the order is locked.
+end note
+
+note bottom of Invoiced
+  Payment is tracked separately in
+  paymentStatus (NotPaid, DepositPaid,
+  Invoiced, Paid).
+end note
+@enduml

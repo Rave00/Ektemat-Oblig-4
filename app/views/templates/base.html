@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Ekte Mat Online{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-row">
+      <a class="brand" href="{{ url_for('shop.index') }}">Ekte Mat <span>Online</span></a>
+      <nav aria-label="Main">
+        <a href="{{ url_for('shop.index') }}">Menu</a>
+        {% if g.user and g.user.is_admin %}<a href="{{ url_for('admin.index') }}">Admin</a>{% endif %}
+        {% if g.user %}
+          <span class="who">{{ g.user.name }}</span>
+          <form method="post" action="{{ url_for('account.logout') }}" class="inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="link-button">Log out</button>
+          </form>
+        {% else %}
+          <a href="{{ url_for('account.login') }}">Log in</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <p class="flash flash-{{ category }}" role="status">{{ message }}</p>
+      {% endfor %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">Ekte Mat AS, Bergen · INFO212 student project · synthetic data only</div>
+  </footer>
+</body>
+</html>

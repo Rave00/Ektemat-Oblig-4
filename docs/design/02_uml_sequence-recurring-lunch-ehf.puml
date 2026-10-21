@@ -1,0 +1,60 @@
+@startuml
+' Sequence: corporate customer places a recurring lunch order and receives a monthly EHF invoice via Fiken.
+' Objects (":Class") must exist in 02_uml_domain-class.puml - checked by generators/check_models.py.
+title Corporate customer: recurring lunch order and monthly EHF invoice via Fiken
+skinparam shadowing false
+skinparam sequenceMessageAlign left
+autonumber
+
+actor "Corporate user\n(office manager)" as U
+participant "Ekte Mat Online\n<<system>>" as S
+participant ":CompanyAccount" as C
+participant ":StandingOrder" as SO
+participant ":Order" as O
+participant ":OrderChange" as OC
+participant ":Invoice" as I
+actor "Driver" as D
+participant "Fiken\n<<external system>>" as F
+
+U -> S : create standing order\n(Tuesdays, 12 guests, dishes, cost-centre code)  [US-32]
+S -> C : read approvalLimitNok, requiresCostCentre
+C --> S : limit 15 000 NOK, cost centre required
+S -> SO ** : create(weekday = Tuesday, guestCount = 12, costCentreCode)
+S --> U : standing order saved
+note over S : Weekly total is below the company's approval limit,\nso no company approval is needed (US-31).
+
+loop every week while StandingOrder.active
+  S -> O ** : create from standing order (status = Submitted)
+  S -> S : check daily capacity (daily_covers)  [US-18]
+  alt capacity OK
+    S -> O : status = Approved
+    S --> U : confirmation e-mail  [US-11]
+  else capacity exceeded
+    S -> S : flag order for coordinator review
+  end
+  opt change before the change deadline (value still open: C-02)
+    U -> S : change guest count  [US-12]
+    S -> O : guestCount = new value
+    S -> OC ** : create(field = guestCount, oldValue, newValue)
+  end
+  D -> S : mark delivered  [US-29]
+  S -> O : status = Delivered
+end
+
+== Month end ==
+S -> I ** : create(company, periodMonth)  [US-36]
+loop each delivered order of the company this month
+  S -> O : invoice = this Invoice
+end
+S -> F : create invoice (EHF, cost-centre code on every line)
+F --> S : fikenInvoiceId
+S -> I : store fikenInvoiceId, sentAt
+F -> U : EHF invoice via the EHF network
+S -> O : status = Invoiced (each order)
+
+== Daily payment sync ==
+S -> F : get payment status  [US-39]
+F --> S : paid
+S -> I : paidAt = payment date
+S -> O : paymentStatus = Paid (each order)
+@enduml
