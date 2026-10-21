@@ -15,8 +15,11 @@ def init_app(app):
 
 # ---- log in state -----------------------------------------------------------------------------------
 def log_in(user):
+    cart = session.get("cart")
     session.clear()                      # a fresh session at log in prevents session fixation
     session["user_id"] = user.id
+    if cart:
+        session["cart"] = cart           # ...but the cart is kept, so a customer can log in to order (plan 2, P2-9)
 
 
 def log_out():
