@@ -24,8 +24,8 @@ python -m pytest                  # all tests
 
 ## Team rules
 
-- Plan first: every larger feature starts as `docs/plans/N - Name-With-Dashes.md`; code only after Rave approves it.
-- Work on a branch `feature/N-name`; Rave reviews and merges on GitHub.
+- Plan first: every larger feature starts as `docs/plans/N - Name-With-Dashes.md`; code only after User1 approves it.
+- Work on a branch `feature/N-name`; User1 reviews and merges on GitHub.
 - All tests pass before every push. New behaviour gets a test.
 - Never import `sqlite3` or the SQLite repositories outside `app/models/repositories/sqlite/`
   (enforced by `tests/test_architecture.py`).

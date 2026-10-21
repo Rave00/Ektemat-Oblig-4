@@ -1,6 +1,6 @@
 # Plan 0: Architecture and walking skeleton
 
-- **Status:** Done. Approved by Rave on 2026-10-21 (only change requested: the file name); built in pull request #1, merged by Rave on 2026-10-21.
+- **Status:** Done. Approved by User1 on 2026-10-21 (only change requested: the file name); built in pull request #1, merged by User1 on 2026-10-21.
   Revised the same day, before any code: log in / log out moved into plan 0 (see section 5, "Revision").
 - **Date:** 2026-10-21
 - **Covers:** the overall architecture of Ekte Mat Online (Oblig 4) and the first build step. Every later feature gets its own plan (`1 - ...`, `2 - ...`) before it is built.
@@ -109,9 +109,9 @@ planned for plan 3. Log in and log out (decision D6) therefore move into plan 0;
 
 ## 7. How we work
 
-1. **Plan first.** A larger feature starts as `docs/plans/N - Name-With-Dashes.md`. Code starts only after Rave approves it.
+1. **Plan first.** A larger feature starts as `docs/plans/N - Name-With-Dashes.md`. Code starts only after User1 approves it.
 2. **Build on a branch** `feature/N-name` (no spaces in branch names); tests pass before every push.
-3. **Review:** Rave reviews the diff on GitHub ("Compare & pull request") and merges it.
+3. **Review:** User1 reviews the diff on GitHub ("Compare & pull request") and merges it.
 4. **After merging**, the plan gets a short "What changed compared with the plan" section.
 5. **Never commit** `.env`, API keys or real personal data; only synthetic data.
 6. The finished version is tagged `oblig4`.
@@ -128,7 +128,7 @@ planned for plan 3. Log in and log out (decision D6) therefore move into plan 0;
 
 - **Group size:** resolved. The group builds several versions of the same assignment with different agents and compares them; this repository is one of them.
 - **Repository visibility:** the assignment text says "public, private and shared with the course staff". Plan: private, with the course staff added as collaborators.
-- **Windows:** the app must run on Rave's Windows machine (Python 3.11 or newer). The README gives Windows commands first.
+- **Windows:** the app must run on User1's Windows machine (Python 3.11 or newer). The README gives Windows commands first.
 - **Lab design vs Oblig 4:** the lab domain model is richer (22 classes). This version uses the subset in section 4; the rest stays in `docs/design/` for later.
 
 ## 10. What changed compared with the plan (after merging pull request #1)
