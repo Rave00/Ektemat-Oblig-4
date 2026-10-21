@@ -54,7 +54,7 @@ def test_the_phone_rotation_is_kept(store):
     (b"just some text, not a picture", "not a JPEG, PNG or WebP"),
     (picture("GIF"), "not a JPEG, PNG or WebP"),
     (b"\xff\xd8" + b"0" * (2 * 1024 * 1024), "larger than 2 MB"),
-])
+], ids=["text", "gif", "too-large"])  # short ids: a 2 MB bytes id breaks PYTEST_CURRENT_TEST on Windows
 def test_at14_files_that_are_not_acceptable_pictures_are_refused(store, data, message):
     with pytest.raises(ImageError, match=message):
         store.save_pending(io.BytesIO(data))
