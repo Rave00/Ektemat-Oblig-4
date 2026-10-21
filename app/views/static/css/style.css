@@ -103,6 +103,8 @@ nav a:hover, .link-button:hover { text-decoration: underline; }
 .compare figure { margin: 0; }
 .compare figcaption { font-weight: 600; margin-bottom: 6px; }
 .no-picture { aspect-ratio: 3 / 2; display: grid; place-items: center; border: 1px dashed var(--line); border-radius: var(--radius); color: var(--muted); }
+a.button { display: inline-block; text-decoration: none; }
+.form input[type=file] { width: 100%; min-width: 0; }      /* a file picker must not push its column wider */
 @media (max-width: 760px) {
-  .edit-layout, .two-columns { grid-template-columns: 1fr; }
+  .edit-layout, .two-columns { grid-template-columns: minmax(0, 1fr); }
 }
