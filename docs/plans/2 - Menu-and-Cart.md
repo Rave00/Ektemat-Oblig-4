@@ -141,7 +141,7 @@ The button that goes from the cart to the order form arrives in plan 3.
 - [x] Acceptance tests 1-17 pass, plus all earlier tests (147 tests).
 - [x] Every rule test has been seen to fail when its rule is broken on purpose (as in plan 1).
 - [x] Works from a fresh clone with the README commands.
-- [ ] Works on User1's Windows PC. **Still open: for User1.**
+- [x] Works on User1's Windows PC: 147 passed (2026-10-21).
 - [x] Checked in a browser at 1200 px and 390 px (page width measured on every page); screenshots of the menu and
       the cart saved in `docs/screenshots/`.
 - [x] This plan gets a "What changed compared with the plan" section (below, written with the code).
@@ -164,4 +164,4 @@ The button that goes from the cart to the order form arrives in plan 3.
 - **Verification:** 147 tests, also from a fresh clone with only the README commands. 17 rules were broken on purpose,
   one at a time, and each was caught by at least one test. Browser check at 1200 px and 390 px: no page is wider than
   the screen; the menu loaded in 71-140 ms locally (NFR-01 cannot be measured over 4G here); no server errors.
-- **Still open:** the run on User1's Windows PC (Done when, above).
+- **Windows:** User1 ran the tests on Windows on 2026-10-21: 147 passed.
