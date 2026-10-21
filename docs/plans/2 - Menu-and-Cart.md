@@ -1,6 +1,6 @@
 # Plan 2: Customer menu by event and shopping cart
 
-- **Status:** Draft, awaiting User1's approval.
+- **Status:** Approved by User1 on 2026-10-21 (no changes requested; P2-5 "fine for now"). Not built yet.
 - **Date:** 2026-10-21
 - **Requirements:** C1 (menu by event), C2 (shopping cart). Lab backlog: US-01 (browse the menus by type of event,
   with prices per person; criteria 1-3), US-02 (allergens and dietary labels on every dish; criteria 1 and 3),
