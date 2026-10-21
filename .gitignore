@@ -1,6 +1,9 @@
 # Secrets and local settings: never commit
 .env
+.env.*
+!.env.example
 instance/
+.claude/settings.local.json
 
 # Uploaded and generated images (the seed script recreates its own)
 app/views/static/uploads/*

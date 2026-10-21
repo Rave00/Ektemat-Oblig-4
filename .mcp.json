@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "neo4j": {
+      "type": "http",
+      "url": "${NEO4J_MCP_URL}"
+    }
+  }
+}
