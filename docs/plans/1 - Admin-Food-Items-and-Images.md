@@ -1,6 +1,6 @@
 # Plan 1: Admin food items and images
 
-- **Status:** DRAFT, awaiting approval by Rave
+- **Status:** Approved by Rave on 2026-10-21 (no changes requested).
 - **Date:** 2026-10-21
 - **Requirements:** A1 (food items), A2 (images). Lab backlog: US-25 (staff edit the menu themselves),
   US-02 (allergens; publishing blocked without allergen information), NFR-14 (a dish added in at most 3 minutes).
