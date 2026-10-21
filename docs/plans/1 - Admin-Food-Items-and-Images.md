@@ -87,7 +87,8 @@ once (it rebuilds the database). The seed marks every sample dish's allergen inf
 - [x] Works from a fresh clone with the README commands.
 - [x] Checked in a browser, including phone width; screenshots of the food items table, the form and the
       picture preview are saved for the report (`docs/screenshots/`).
-- [ ] NFR-14 checked by hand: adding a dish with a picture takes less than 3 minutes. **Still open: for User1.**
+- [x] NFR-14 checked by hand: adding a dish with a picture takes less than 3 minutes. Done 2026-10-21 by User1 on
+      Windows: about 30 seconds for the form and about 1 minute for the picture, most of it finding a picture file.
 - [x] This plan gets a "What changed compared with the plan" section after merging.
 
 ## 7. What changed compared with the plan (after merging pull request #3)
@@ -106,4 +107,10 @@ once (it rebuilds the database). The seed marks every sample dish's allergen inf
   was measured against screen width on every page at 1200 px and 390 px.
 - **Process:** pull request #2 merged this plan to `main` while it still said "draft" (approval had been given in the
   chat a minute earlier); the approval commit itself arrived with pull request #3.
-- **Still open:** the hand check of NFR-14 (Done when, above).
+- **NFR-14 hand check (2026-10-21):** passed, about 1.5 minutes in total (Done when, above). User1 already knew the
+  form; a run by someone who has never seen it would be a stronger test of "non-technical staff, without developer
+  help". The same test showed that the form accepts a vegan label on a dish with eggs and milk (see the
+  suggested follow-up below).
+- **Suggested follow-up (ASSUMPTION, not in the data pack):** reject dietary labels that the allergens contradict:
+  vegan without eggs, milk, fish, crustaceans or molluscs; vegetarian without fish, crustaceans or molluscs;
+  gluten-free without gluten. It serves US-02 ("choose safe food for my guests"). Not built yet.
