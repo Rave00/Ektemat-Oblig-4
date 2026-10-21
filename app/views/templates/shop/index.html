@@ -1,19 +1,38 @@
 {% extends "base.html" %}
+{% from "shop/_card.html" import card with context %}
+{% block title %}{{ events[event] ~ ' · ' if event }}Menu · Ekte Mat Online{% endblock %}
 {% block content %}
 <section class="intro">
   <h1>Authentic, seasonal food for your event</h1>
-  <p>Catering from Bergen for company lunches, conferences, julebord, weddings, confirmations and birthdays.</p>
+  <p>Catering from Bergen for company lunches, conferences, julebord, weddings, confirmations and birthdays.
+     Prices are per person, and each dish has a minimum number of portions.</p>
 </section>
 
-<h2>On the menu now</h2>
-{% if items %}
-  <ul class="plain-list">
-    {% for item in items %}
-      <li><strong>{{ item.name }}</strong> · {{ item.price_nok }} NOK per person · minimum {{ item.min_order_qty }}</li>
-    {% endfor %}
-  </ul>
-  <p class="muted">The full menu with pictures, allergens and a cart arrives in plan 2.</p>
+<nav class="filters" aria-label="Choose an event">
+  <a href="{{ url_for('shop.index', label=label) }}"{% if not event %} aria-current="page"{% endif %}>All events</a>
+  {% for code, name in events.items() %}
+    <a href="{{ url_for('shop.index', event=code, label=label) }}"{% if event == code %} aria-current="page"{% endif %}>{{ name }}</a>
+  {% endfor %}
+</nav>
+<nav class="filters filters-small" aria-label="Choose a dietary label">
+  <a href="{{ url_for('shop.index', event=event) }}"{% if not label %} aria-current="page"{% endif %}>All dishes</a>
+  {% for code, name in labels.items() %}
+    <a href="{{ url_for('shop.index', event=event, label=code) }}"{% if label == code %} aria-current="page"{% endif %}>{{ name }}</a>
+  {% endfor %}
+</nav>
+
+{% for code, name, dishes in sections %}
+  <section class="menu-section" id="{{ code }}" aria-labelledby="heading-{{ code }}">
+    <h2 id="heading-{{ code }}">{{ name }}</h2>
+    <div class="cards">
+      {% for item in dishes %}{{ card(item, code) }}{% endfor %}
+    </div>
+  </section>
 {% else %}
-  <p class="muted">No dishes are published yet. Run <code>python seed.py</code> to add sample data.</p>
-{% endif %}
+  {% if event or label %}
+    <p class="muted">No dishes match this choice yet. <a href="{{ url_for('shop.index') }}">See the whole menu</a>.</p>
+  {% else %}
+    <p class="muted">No dishes are published yet. Run <code>python seed.py</code> to add sample data.</p>
+  {% endif %}
+{% endfor %}
 {% endblock %}

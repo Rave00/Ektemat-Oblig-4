@@ -12,6 +12,7 @@
       <a class="brand" href="{{ url_for('shop.index') }}">Ekte Mat <span>Online</span></a>
       <nav aria-label="Main">
         <a href="{{ url_for('shop.index') }}">Menu</a>
+        <a href="{{ url_for('shop.cart') }}">Cart ({{ cart_size }})</a>
         {% if g.user and g.user.is_admin %}<a href="{{ url_for('admin.index') }}">Admin</a>{% endif %}
         {% if g.user %}
           <span class="who">{{ g.user.name }}</span>

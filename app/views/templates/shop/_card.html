@@ -1,0 +1,36 @@
+{# One dish on the menu (C1, plan 2, P2-7). `section` keeps the ids unique when a dish is shown in several events. #}
+{% macro card(item, section) %}
+<article class="card">
+  {% if item.image_path %}
+    <img class="card-picture" src="{{ url_for('static', filename=item.image_path) }}" alt="{{ item.name }}"
+         width="600" height="400" loading="lazy">
+  {% else %}
+    <div class="card-picture no-picture">No picture</div>
+  {% endif %}
+  <div class="card-body">
+    <h3>{{ item.name }}</h3>
+    <p class="card-text">{{ item.description }}</p>
+    <p class="price">{{ item.price_nok|nok }} per person</p>
+    <p class="small">Minimum order: {{ item.min_order_qty }} portions</p>
+    {% if item.labels %}
+      <ul class="tags" aria-label="Dietary labels">
+        {% for code, name in labels.items() if code in item.labels %}<li class="badge badge-on">{{ name }}</li>{% endfor %}
+      </ul>
+    {% endif %}
+    <p class="small allergens">
+      {% if item.no_allergens %}Contains none of the 14 allergens
+      {% else %}Contains: {% for code, name in allergens.items() if code in item.allergens %}{{ name }}{{ ", " if not loop.last }}{% endfor %}
+      {% endif %}
+    </p>
+    <form method="post" action="{{ url_for('shop.cart_add') }}" class="add-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="item_id" value="{{ item.id }}">
+      <input type="hidden" name="next" value="{{ here }}">
+      <label for="portions-{{ section }}-{{ item.id }}">Portions</label>
+      <input id="portions-{{ section }}-{{ item.id }}" name="portions" type="number" inputmode="numeric"
+             min="{{ item.min_order_qty }}" max="{{ max_portions }}" step="1" value="{{ item.min_order_qty }}" required>
+      <button type="submit" class="button">Add to cart</button>
+    </form>
+  </div>
+</article>
+{% endmacro %}

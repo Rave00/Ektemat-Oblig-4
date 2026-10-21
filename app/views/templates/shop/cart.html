@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Cart · Ekte Mat Online{% endblock %}
+{% block content %}
+<h1>Your cart</h1>
+
+{% for name in removed %}
+  <p class="flash flash-error" role="status">
+    {% if name %}“{{ name }}” is no longer on the menu and was removed from your cart.
+    {% else %}A dish in your cart is no longer on the menu and was removed.{% endif %}
+  </p>
+{% endfor %}
+
+{% if lines %}
+  <div class="table-wrap">
+    <table class="table cart-table">
+      <thead>
+        <tr><th scope="col">Dish</th><th scope="col" class="num">Price per person</th><th scope="col">Portions</th>
+            <th scope="col" class="num">Line total</th><th scope="col"><span class="visually-hidden">Remove</span></th></tr>
+      </thead>
+      <tbody>
+        {% for line in lines %}
+          <tr>
+            <td data-label="Dish">
+              <strong>{{ line.item.name }}</strong>
+              <span class="small muted">Minimum {{ line.item.min_order_qty }} portions</span>
+              {% if line.below_minimum %}
+                <span class="field-error">Below the minimum of {{ line.item.min_order_qty }} portions: please change the number.</span>
+              {% endif %}
+            </td>
+            <td data-label="Price per person" class="num">{{ line.item.price_nok|nok }}</td>
+            <td data-label="Portions">
+              <form method="post" action="{{ url_for('shop.cart_update') }}" class="quantity-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="item_id" value="{{ line.item.id }}">
+                <label class="visually-hidden" for="portions-{{ line.item.id }}">Portions of {{ line.item.name }}</label>
+                <input id="portions-{{ line.item.id }}" name="portions" type="number" inputmode="numeric"
+                       min="{{ line.item.min_order_qty }}" max="{{ max_portions }}" step="1" value="{{ line.portions }}" required>
+                <button type="submit" class="link-action">Update</button>
+              </form>
+            </td>
+            <td data-label="Line total" class="num">{{ line.total_nok|nok }}</td>
+            <td>
+              <form method="post" action="{{ url_for('shop.cart_remove') }}" class="inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="item_id" value="{{ line.item.id }}">
+                <button type="submit" class="link-action danger">Remove<span class="visually-hidden"> {{ line.item.name }}</span></button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr><th scope="row" colspan="3">Estimated total</th><td class="num total">{{ total|nok }}</td><td></td></tr>
+      </tfoot>
+    </table>
+  </div>
+  <p class="muted small">Ekte Mat confirms the final price when it approves your order. Discounts and delivery are not included.</p>
+  <p class="button-row"><a class="button secondary" href="{{ url_for('shop.index') }}">Continue shopping</a></p>
+{% else %}
+  <p>Your cart is empty.</p>
+  <p><a class="button" href="{{ url_for('shop.index') }}">See the menu</a></p>
+{% endif %}
+{% endblock %}

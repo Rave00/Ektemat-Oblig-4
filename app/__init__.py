@@ -39,6 +39,7 @@ def create_app(test_config=None):
     app.extensions["images"] = ImageStore(app.config["UPLOAD_FOLDER"])
 
     security.init_app(app)
+    app.add_template_filter(format_nok, "nok")
     app.register_blueprint(shop.bp)
     app.register_blueprint(account.bp)
     app.register_blueprint(admin.bp)
@@ -54,6 +55,12 @@ def _local_secret_key(instance_path):
     if not key_file.exists():
         key_file.write_text(secrets.token_hex(32), encoding="utf-8")
     return key_file.read_text(encoding="utf-8").strip()
+
+
+def format_nok(amount):
+    """12450 -> "12 450 NOK" (plan 2, P2-4). The space between thousands is a no-break space, so a price is
+    never split over two lines."""
+    return f"{amount:,} NOK".replace(",", " ")
 
 
 MESSAGES = {413: "The file is too large: pictures can be at most 2 MB."}

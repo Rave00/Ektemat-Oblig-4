@@ -38,6 +38,15 @@ DIETARY_LABELS = {
     "halal": "Halal",
 }
 
+# Allergens that prove a dietary label wrong (plan 2, P2-8). ASSUMPTION from common food knowledge, not from the
+# data pack. Lactose-free milk still contains milk protein, and halal cannot be judged from allergens, so those
+# two labels have no rule.
+LABEL_EXCLUDES = {
+    "vegan": ("eggs", "milk", "fish", "crustaceans", "molluscs"),
+    "vegetarian": ("fish", "crustaceans", "molluscs"),
+    "gluten_free": ("gluten",),
+}
+
 ROLES = ("customer", "admin")
 
 
@@ -104,7 +113,20 @@ def validate_food_item(item):
             errors[attr] = f"Unknown value: {', '.join(sorted(unknown))}."
     if item.allergens and item.no_allergens:
         errors["allergens"] = "Tick the allergens, or \"contains none of the 14 allergens\", not both."
+    contradicted = label_conflicts(item)
+    if contradicted and "labels" not in errors:
+        errors["labels"] = " ".join(contradicted)
     return errors
+
+
+def label_conflicts(item):
+    """One message per dietary label that the item's allergens prove wrong (plan 2, P2-8)."""
+    messages = []
+    for label, excluded in LABEL_EXCLUDES.items():
+        found = [name for code, name in ALLERGENS.items() if code in excluded and code in item.allergens]
+        if label in item.labels and found:
+            messages.append(f"A {DIETARY_LABELS[label].lower()} dish can't contain {', '.join(found)}.")
+    return messages
 
 
 def publish_problems(item):
@@ -115,3 +137,27 @@ def publish_problems(item):
     if not item.image_path:
         problems.append(PICTURE_MISSING)
     return problems
+
+
+# ---- the customer menu (C1, plan 2, P2-5 and P2-6) -------------------------------------------------------
+def menu_sections(items, event=None, label=None):
+    """The menu as a list of (event code, event name, dishes), in the order of EVENTS.
+
+    Only published dishes are included. A dish offered for several events is in each of those sections, and an
+    event without dishes has no section. `event` keeps one section (US-01, criterion 2); `label` keeps only
+    dishes with that dietary label (US-02, criterion 3). An unknown code raises ValueError, so a mistyped filter
+    can never look like a filtered menu.
+    """
+    if event is not None and event not in EVENTS:
+        raise ValueError(f"Unknown event: {event}")
+    if label is not None and label not in DIETARY_LABELS:
+        raise ValueError(f"Unknown dietary label: {label}")
+    sections = []
+    for code, name in EVENTS.items():
+        if event is not None and code != event:
+            continue
+        dishes = [item for item in items
+                  if item.published and code in item.events and (label is None or label in item.labels)]
+        if dishes:
+            sections.append((code, name, dishes))
+    return sections
