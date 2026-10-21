@@ -68,6 +68,50 @@ class FoodItem:
     events: list[str] = field(default_factory=list)
     allergens: list[str] = field(default_factory=list)
     labels: list[str] = field(default_factory=list)
+    no_allergens: bool = False                  # ticked: "contains none of the 14 allergens" (plan 1, P1-2)
     published: bool = False
     image_path: str | None = None               # relative to the static folder, e.g. "uploads/seed-1.png"
     id: int | None = None
+
+
+# ---- rules for food items (plan 1, P1-1 to P1-3) ------------------------------------------------------
+LIMITS = {"name": 100, "description": 500, "price_nok": 100_000, "min_order_qty": 1000}
+
+ALLERGEN_INFO_MISSING = "Allergen information missing"      # exact wording from lab backlog US-02
+PICTURE_MISSING = "Picture missing"
+
+
+def validate_food_item(item):
+    """Return {field: message} for every rule the item breaks; an empty dict means the item is valid."""
+    errors = {}
+    if not item.name.strip():
+        errors["name"] = "Enter a name."
+    elif len(item.name) > LIMITS["name"]:
+        errors["name"] = f"At most {LIMITS['name']} characters."
+    if not item.description.strip():
+        errors["description"] = "Enter a description."
+    elif len(item.description) > LIMITS["description"]:
+        errors["description"] = f"At most {LIMITS['description']} characters."
+    if not 0 <= item.price_nok <= LIMITS["price_nok"]:
+        errors["price_nok"] = "Enter a price between 0 and 100 000 NOK."
+    if not 1 <= item.min_order_qty <= LIMITS["min_order_qty"]:
+        errors["min_order_qty"] = f"Enter a number between 1 and {LIMITS['min_order_qty']}."
+    if not item.events:
+        errors["events"] = "Tick at least one event."
+    for attr, known in (("events", EVENTS), ("allergens", ALLERGENS), ("labels", DIETARY_LABELS)):
+        unknown = set(getattr(item, attr)) - known.keys()
+        if unknown:
+            errors[attr] = f"Unknown value: {', '.join(sorted(unknown))}."
+    if item.allergens and item.no_allergens:
+        errors["allergens"] = "Tick the allergens, or \"contains none of the 14 allergens\", not both."
+    return errors
+
+
+def publish_problems(item):
+    """Reasons why the item may not be shown on the customer menu; an empty list means it can be published."""
+    problems = []
+    if not item.allergens and not item.no_allergens:
+        problems.append(ALLERGEN_INFO_MISSING)
+    if not item.image_path:
+        problems.append(PICTURE_MISSING)
+    return problems

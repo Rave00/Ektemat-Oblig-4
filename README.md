@@ -47,7 +47,8 @@ If PowerShell refuses to run `Activate.ps1`, run
 | Customer | kunde1@example.com | customer-dev-1 |
 | Customer | kunde2@example.com | customer-dev-2 |
 
-`python seed.py` deletes all existing data and starts again.
+`python seed.py` deletes all existing data (including uploaded pictures) and starts again. Run it again after
+pulling a version that changes the database structure (plan 1 added a column).
 
 ## Structure (Model-View-Controller)
 

@@ -10,6 +10,7 @@ from pathlib import Path
 from flask import Flask, render_template
 
 from .controllers import account, admin, security, shop
+from .models.images import ImageStore
 from .models.repositories.sqlite import SqliteRepositories
 
 
@@ -23,7 +24,8 @@ def create_app(test_config=None):
     Path(app.instance_path).mkdir(parents=True, exist_ok=True)
     app.config.update(
         DATABASE=os.environ.get("DATABASE") or str(Path(app.instance_path) / "ektemat.db"),
-        MAX_CONTENT_LENGTH=2 * 1024 * 1024,   # image uploads up to 2 MB (plan 0, D9)
+        UPLOAD_FOLDER=str(Path(app.static_folder) / "uploads"),
+        MAX_CONTENT_LENGTH=2 * 1024 * 1024 + 64 * 1024,   # a 2 MB picture plus the rest of the form (plan 1)
         CSRF_ENABLED=True,
     )
     if test_config:
@@ -34,6 +36,7 @@ def create_app(test_config=None):
     repositories = SqliteRepositories(app.config["DATABASE"])
     repositories.initialise()                 # creates missing tables; never deletes data
     app.extensions["repositories"] = repositories
+    app.extensions["images"] = ImageStore(app.config["UPLOAD_FOLDER"])
 
     security.init_app(app)
     app.register_blueprint(shop.bp)
@@ -53,5 +56,9 @@ def _local_secret_key(instance_path):
     return key_file.read_text(encoding="utf-8").strip()
 
 
+MESSAGES = {413: "The file is too large: pictures can be at most 2 MB."}
+
+
 def _error_page(error):
-    return render_template("errors/error.html", error=error), error.code
+    description = MESSAGES.get(error.code, error.description)
+    return render_template("errors/error.html", error=error, description=description), error.code

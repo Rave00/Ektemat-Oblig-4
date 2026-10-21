@@ -47,9 +47,6 @@ FOOD = [
      395, 20, ["confirmation", "birthday"], ["gluten", "milk", "eggs", "fish"], [], True, "#2f5d46"),
 ]
 
-UPLOADS = Path(__file__).parent / "app" / "views" / "static" / "uploads"
-
-
 def placeholder_image(folder, number, name, colour):
     """Draw a simple picture with the dish name, so the menu has images without any image files in Git."""
     image = Image.new("RGB", (600, 400), colour)
@@ -77,11 +74,13 @@ def _darker(colour, factor=0.7):
     return f"#{int(r * factor):02x}{int(g * factor):02x}{int(b * factor):02x}"
 
 
-def seed(app, uploads=UPLOADS):
+def seed(app, uploads=None):
     repos = app.extensions["repositories"]
     repos.reset()
+    uploads = Path(uploads or app.config["UPLOAD_FOLDER"])
     uploads.mkdir(parents=True, exist_ok=True)
-    for old in uploads.glob("seed-*.png"):
+    # The database is empty again, so no stored picture is in use any more: remove them all.
+    for old in [*uploads.glob("*.png"), *uploads.glob("*.jpg"), *uploads.glob("pending/*.jpg")]:
         old.unlink()
 
     email, name, password = ADMIN

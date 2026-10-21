@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Food items · Admin · Ekte Mat Online{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{{ url_for('admin.index') }}">Admin</a> / Food items</p>
+<div class="title-row">
+  <h1>Food items</h1>
+  <a class="button" href="{{ url_for('admin.new_item') }}">Add food item</a>
+</div>
+
+{% if items %}
+<div class="table-wrap">
+  <table class="table">
+    <thead>
+      <tr><th>Picture</th><th>Name</th><th>Price</th><th>Min. order</th><th>Events</th><th>Status</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td>
+          {% if item.image_path %}<img class="thumb" src="{{ url_for('static', filename=item.image_path) }}" alt="">
+          {% else %}<span class="muted small">No picture</span>{% endif %}
+        </td>
+        <td><a href="{{ url_for('admin.edit_item', item_id=item.id) }}">{{ item.name }}</a></td>
+        <td class="num">{{ item.price_nok }} NOK</td>
+        <td class="num">{{ item.min_order_qty }}</td>
+        <td class="small">{% for code in item.events %}{{ events[code] }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
+        <td>{% if item.published %}<span class="badge badge-on">Published</span>{% else %}<span class="badge">Hidden</span>{% endif %}</td>
+        <td class="actions">
+          <a href="{{ url_for('admin.edit_item', item_id=item.id) }}">Edit</a>
+          <form method="post" class="inline"
+                action="{{ url_for('admin.unpublish' if item.published else 'admin.publish', item_id=item.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="link-action">{{ 'Unpublish' if item.published else 'Publish' }}</button>
+          </form>
+          {# tojson makes a safe JavaScript string; it must sit in a single-quoted attribute #}
+          <form method="post" class="inline" action="{{ url_for('admin.delete_item', item_id=item.id) }}"
+                onsubmit='return confirm({{ ("Delete “" ~ item.name ~ "”? This cannot be undone.") | tojson }});'>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="link-action danger">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+  <p class="muted">No food items yet. <a href="{{ url_for('admin.new_item') }}">Add the first one.</a></p>
+{% endif %}
+{% endblock %}
