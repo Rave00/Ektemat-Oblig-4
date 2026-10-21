@@ -1,6 +1,6 @@
 # Plan 0: Architecture and walking skeleton
 
-- **Status:** Approved by Rave on 2026-10-21 (only change requested: the file name).
+- **Status:** Done. Approved by Rave on 2026-10-21 (only change requested: the file name); built in pull request #1, merged by Rave on 2026-10-21.
   Revised the same day, before any code: log in / log out moved into plan 0 (see section 5, "Revision").
 - **Date:** 2026-10-21
 - **Covers:** the overall architecture of Ekte Mat Online (Oblig 4) and the first build step. Every later feature gets its own plan (`1 - ...`, `2 - ...`) before it is built.
@@ -126,7 +126,18 @@ planned for plan 3. Log in and log out (decision D6) therefore move into plan 0;
 
 ## 9. Risks and open points
 
-- **Group size:** the assignment says group work for 2-4 students. Confirm with the course staff that a solo submission is accepted.
+- **Group size:** resolved. The group builds several versions of the same assignment with different agents and compares them; this repository is one of them.
 - **Repository visibility:** the assignment text says "public, private and shared with the course staff". Plan: private, with the course staff added as collaborators.
 - **Windows:** the app must run on Rave's Windows machine (Python 3.11 or newer). The README gives Windows commands first.
 - **Lab design vs Oblig 4:** the lab domain model is richer (22 classes). This version uses the subset in section 4; the rest stays in `docs/design/` for later.
+
+## 10. What changed compared with the plan (after merging pull request #1)
+
+- **Log in / log out moved into plan 0** (decided before building, see section 5): the admin pages in plan 1 need them.
+- **D9 (images):** only the seed's placeholder pictures exist so far; upload with preview is plan 1, as planned.
+- **Small additions found while building:** a plain-language 403 message (the default text was technical, seen in the
+  browser check); tests no longer write a secret key into `instance/`; the seed script takes the picture folder as a
+  parameter so tests do not touch the real `uploads/` folder.
+- **Verification:** 22 tests, also from a fresh clone with only the README commands (Python 3.13); every rule test
+  was checked by deliberately breaking a copy of the code; the pages were checked in a browser, including phone width.
+- Everything else (D1-D11, the data model, the folder layout) was built as planned.
