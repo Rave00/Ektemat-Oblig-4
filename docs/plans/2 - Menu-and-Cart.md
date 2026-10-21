@@ -1,6 +1,6 @@
 # Plan 2: Customer menu by event and shopping cart
 
-- **Status:** Approved by User1 on 2026-10-21 (no changes requested; P2-5 "fine for now"). Not built yet.
+- **Status:** Approved by User1 on 2026-10-21 (no changes requested; P2-5 "fine for now"). Built in pull request #11, awaiting User1's review.
 - **Date:** 2026-10-21
 - **Requirements:** C1 (menu by event), C2 (shopping cart). Lab backlog: US-01 (browse the menus by type of event,
   with prices per person; criteria 1-3), US-02 (allergens and dietary labels on every dish; criteria 1 and 3),
@@ -138,9 +138,30 @@ The button that goes from the cart to the order form arrives in plan 3.
 
 ## 8. Done when
 
-- [ ] Acceptance tests 1-17 pass, plus all earlier tests.
-- [ ] Every rule test has been seen to fail when its rule is broken on purpose (as in plan 1).
-- [ ] Works from a fresh clone with the README commands, and on User1's Windows PC.
-- [ ] Checked in a browser at 1200 px and 390 px (page width measured on every page); screenshots of the menu and
+- [x] Acceptance tests 1-17 pass, plus all earlier tests (147 tests).
+- [x] Every rule test has been seen to fail when its rule is broken on purpose (as in plan 1).
+- [x] Works from a fresh clone with the README commands.
+- [ ] Works on User1's Windows PC. **Still open: for User1.**
+- [x] Checked in a browser at 1200 px and 390 px (page width measured on every page); screenshots of the menu and
       the cart saved in `docs/screenshots/`.
-- [ ] This plan gets a "What changed compared with the plan" section after merging.
+- [x] This plan gets a "What changed compared with the plan" section (below, written with the code).
+
+## 9. What changed compared with the plan (pull request #11)
+
+- **Built as planned:** P2-1 to P2-10 and acceptance tests 1-17 (named `test_p2_at01` to `test_p2_at17`), plus
+  model tests for the cart (`test_cart.py`), the menu sections and the label rule (`test_food_item_rules.py`).
+- **Small additions found while building:**
+  - **Cart lines are sorted by dish name.** The browser check showed lines in the order "1", "10", "5": Flask sorts
+    the keys of the session when it saves it, so the order in which dishes were added is lost anyway.
+  - **Model tests for `menu_sections`.** Breaking the "published only" check in the model was not noticed by the
+    tests through HTTP, because the repository also leaves unpublished dishes out. Both layers are now tested.
+  - **The number field accepts at most 7 digits before it is turned into a number.** Python refuses to convert a
+    text of more than 4 300 digits, which would have shown an error page instead of a message (a test sends 5 000).
+  - The cart page only writes the session when it has taken a dish out.
+- **Errors caught before merging:** two of my tests were wrong, not the code. One looked for a dish name that was
+  still in the "Removed ..." message (the same mistake as in plan 1); one compared text with an apostrophe that
+  Jinja writes as `&#39;`. From the browser check: the header's underline on hover also reached the filter links.
+- **Verification:** 147 tests, also from a fresh clone with only the README commands. 17 rules were broken on purpose,
+  one at a time, and each was caught by at least one test. Browser check at 1200 px and 390 px: no page is wider than
+  the screen; the menu loaded in 71-140 ms locally (NFR-01 cannot be measured over 4G here); no server errors.
+- **Still open:** the run on User1's Windows PC (Done when, above).
