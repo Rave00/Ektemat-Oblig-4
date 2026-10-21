@@ -44,7 +44,7 @@ def admin_required(view):
         if g.user is None:
             return redirect(url_for("account.login", next=request.path))
         if not g.user.is_admin:
-            abort(403)
+            abort(403, description="The admin panel is only for Ekte Mat staff.")
         return view(*args, **kwargs)
     return wrapped
 

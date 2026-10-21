@@ -19,7 +19,9 @@ def test_wrong_password_gives_the_same_message_as_unknown_email(client, users):
 
 def test_customer_gets_403_in_the_admin_panel(client, users):
     log_in(client, "kari@test.example")
-    assert client.get("/admin/").status_code == 403
+    response = client.get("/admin/")
+    assert response.status_code == 403
+    assert b"only for Ekte Mat staff" in response.data
 
 
 def test_visitor_is_sent_to_log_in_from_the_admin_panel(client):
