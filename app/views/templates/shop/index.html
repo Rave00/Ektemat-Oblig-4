@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="intro">
+  <h1>Authentic, seasonal food for your event</h1>
+  <p>Catering from Bergen for company lunches, conferences, julebord, weddings, confirmations and birthdays.</p>
+</section>
+
+<h2>On the menu now</h2>
+{% if items %}
+  <ul class="plain-list">
+    {% for item in items %}
+      <li><strong>{{ item.name }}</strong> · {{ item.price_nok }} NOK per person · minimum {{ item.min_order_qty }}</li>
+    {% endfor %}
+  </ul>
+  <p class="muted">The full menu with pictures, allergens and a cart arrives in plan 2.</p>
+{% else %}
+  <p class="muted">No dishes are published yet. Run <code>python seed.py</code> to add sample data.</p>
+{% endif %}
+{% endblock %}

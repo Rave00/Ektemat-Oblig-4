@@ -1,0 +1,21 @@
+# Secrets and local settings: never commit
+.env
+instance/
+
+# Uploaded and generated images (the seed script recreates its own)
+app/views/static/uploads/*
+!app/views/static/uploads/.gitkeep
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Editors and OS
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+.DS_Store

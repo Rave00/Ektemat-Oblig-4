@@ -1,0 +1,65 @@
+/* Ekte Mat Online: one small stylesheet. Colours: forest green and ochre (from the logo notes in the data pack). */
+:root {
+  --ink: #1d1d1b;
+  --muted: #5c5a55;
+  --surface: #fbfaf7;
+  --panel: #ffffff;
+  --line: #e4e0d8;
+  --brand: #2f5d46;
+  --accent: #b9802a;
+  --error: #b3261e;
+  --success: #2e7d4f;
+  --radius: 8px;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.5;
+       color: var(--ink); background: var(--surface); }
+.container { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+main.container { padding-top: 24px; padding-bottom: 48px; min-height: 70vh; }
+h1, h2 { line-height: 1.2; }
+a { color: var(--brand); }
+code { background: var(--line); padding: 1px 5px; border-radius: 4px; }
+
+/* header and footer */
+.site-header { background: var(--brand); color: #fff; }
+.header-row { display: flex; align-items: center; justify-content: space-between; gap: 16px;
+              min-height: 60px; flex-wrap: wrap; }
+.brand { color: #fff; font-weight: 700; font-size: 1.25rem; text-decoration: none; }
+.brand span { color: #f3d9a6; font-weight: 400; }
+nav { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+nav a, .link-button { color: #fff; text-decoration: none; font: inherit; }
+nav a:hover, .link-button:hover { text-decoration: underline; }
+.who { color: #f3d9a6; }
+.link-button { background: none; border: 0; padding: 0; cursor: pointer; }
+.inline { display: inline; margin: 0; }
+.site-footer { border-top: 1px solid var(--line); color: var(--muted); font-size: 0.9rem; padding: 16px 0; }
+
+/* content */
+.intro { padding: 8px 0 16px; }
+.intro p { color: var(--muted); max-width: 60ch; }
+.muted { color: var(--muted); }
+.plain-list { padding-left: 18px; }
+.narrow { max-width: 420px; }
+
+/* forms and buttons */
+.form { display: grid; gap: 8px; }
+.form label { font-weight: 600; margin-top: 8px; }
+.form input { font: inherit; padding: 9px 10px; border: 1px solid var(--line); border-radius: var(--radius);
+              background: var(--panel); }
+.form input:focus { outline: 2px solid var(--brand); outline-offset: 1px; }
+.button { margin-top: 12px; font: inherit; font-weight: 600; color: #fff; background: var(--brand); border: 0;
+          border-radius: var(--radius); padding: 10px 16px; cursor: pointer; justify-self: start; }
+.button:hover { filter: brightness(1.1); }
+
+/* messages */
+.flash { padding: 10px 14px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--panel); }
+.flash-error { border-color: var(--error); color: var(--error); }
+.flash-success { border-color: var(--success); color: var(--success); }
+
+/* admin */
+.stats { display: flex; gap: 16px; flex-wrap: wrap; margin: 16px 0; }
+.stat { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 20px;
+        min-width: 160px; display: grid; }
+.stat-value { font-size: 2rem; font-weight: 700; color: var(--brand); }
+.stat-label { color: var(--muted); }
