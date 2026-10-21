@@ -1,6 +1,6 @@
 # Design from the lab exercise
 
-Copied from the analysis repository `Rave00/EkteMat-Online-Project` (commit `b86f044`, folder `02_Analysis_and_models/`).
+Copied from the lab's analysis repository `EkteMat-Online-Project` (commit `b86f044`, folder `02_Analysis_and_models/`).
 They describe the full Ekte Mat Online system; Oblig 4 builds the subset in plan 0, section 4.
 
 | Diagram | Files | How it is used in Oblig 4 |

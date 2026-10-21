@@ -1,6 +1,6 @@
 # Plan 1: Admin food items and images
 
-- **Status:** Approved by Rave on 2026-10-21 (no changes requested).
+- **Status:** Done. Approved by User1 on 2026-10-21 (no changes requested); built in pull request #3, merged by User1 on 2026-10-21.
 - **Date:** 2026-10-21
 - **Requirements:** A1 (food items), A2 (images). Lab backlog: US-25 (staff edit the menu themselves),
   US-02 (allergens; publishing blocked without allergen information), NFR-14 (a dish added in at most 3 minutes).
@@ -83,9 +83,27 @@ once (it rebuilds the database). The seed marks every sample dish's allergen inf
 
 ## 6. Done when
 
-- [ ] Acceptance tests 1-15 pass, plus all earlier tests.
-- [ ] Works from a fresh clone with the README commands.
-- [ ] Checked in a browser, including phone width; screenshots of the food items table, the form and the
-      picture preview are saved for the report.
-- [ ] NFR-14 checked by hand: adding a dish with a picture takes less than 3 minutes.
-- [ ] This plan gets a "What changed compared with the plan" section after merging.
+- [x] Acceptance tests 1-15 pass, plus all earlier tests (69 tests).
+- [x] Works from a fresh clone with the README commands.
+- [x] Checked in a browser, including phone width; screenshots of the food items table, the form and the
+      picture preview are saved for the report (`docs/screenshots/`).
+- [ ] NFR-14 checked by hand: adding a dish with a picture takes less than 3 minutes. **Still open: for User1.**
+- [x] This plan gets a "What changed compared with the plan" section after merging.
+
+## 7. What changed compared with the plan (after merging pull request #3)
+
+- **Built as planned:** P1-1 to P1-7, the `no_allergens` column, and acceptance tests 1-15 (named `test_at01` to
+  `test_at15`). An extra test collects every admin route automatically and checks that customers and visitors are refused.
+- **Small additions found while building:**
+  - The request size limit is 2 MB plus 64 KB, so a picture of exactly 2 MB still fits together with the rest of the form.
+  - The upload limit page (413) explains the 2 MB limit in plain words.
+  - Uploading twice keeps only the latest pending picture; pending pictures older than 24 hours are removed.
+  - `python seed.py` now also removes uploaded pictures, because the reset database no longer refers to them.
+- **Errors caught before merging:** a Jinja filter that does not exist in Flask (`extract`); a delete confirmation
+  that broke for names with an apostrophe (now built with `tojson`); two tests that read a flash message as page
+  content. From the browser check, not the tests: the file picker pushed the picture panel wider than its column
+  (and the edit page past the screen on phones), and the "Add food item" button was underlined. Afterwards, page width
+  was measured against screen width on every page at 1200 px and 390 px.
+- **Process:** pull request #2 merged this plan to `main` while it still said "draft" (approval had been given in the
+  chat a minute earlier); the approval commit itself arrived with pull request #3.
+- **Still open:** the hand check of NFR-14 (Done when, above).

@@ -24,14 +24,17 @@ python -m pytest                  # all tests
 
 ## Team rules
 
-- Plan first: every larger feature starts as `docs/plans/N - Name-With-Dashes.md`; code only after Rave approves it.
-- Work on a branch `feature/N-name`; Rave reviews and merges on GitHub.
+- Plan first: every larger feature starts as `docs/plans/N - Name-With-Dashes.md`; code only after User1 approves it.
+- Work on a branch `feature/N-name`; User1 reviews and merges on GitHub.
 - All tests pass before every push. New behaviour gets a test.
 - Never import `sqlite3` or the SQLite repositories outside `app/models/repositories/sqlite/`
   (enforced by `tests/test_architecture.py`).
 - Business rules belong in `app/models/`, not in routes. Controllers stay thin.
 - Every POST form includes `<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">`.
 - Never commit `.env`, API keys, `instance/` or real personal data.
+- The repository owner is called **User1** in every file, plan and commit message. Never write a group member's
+  real name or personal e-mail address (test data uses `@example.com` or `.example` addresses; checked by
+  `tests/test_privacy.py`).
 - Requirements: user stories and design come from the lab (`docs/requirements/`, `docs/design/`);
   use the `ektemat-requirements` skill when writing or changing stories.
 - British English in the UI and docs; dates as YYYY-MM-DD; money in NOK.
