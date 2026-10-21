@@ -1,14 +1,8 @@
 {
   "mcpServers": {
     "neo4j": {
-      "command": "uvx",
-      "args": ["mcp-neo4j-cypher"],
-      "env": {
-        "NEO4J_URI": "${NEO4J_URI}",
-        "NEO4J_USERNAME": "${NEO4J_USERNAME}",
-        "NEO4J_PASSWORD": "${NEO4J_PASSWORD}",
-        "NEO4J_DATABASE": "${NEO4J_DATABASE:-neo4j}"
-      }
+      "type": "http",
+      "url": "${NEO4J_MCP_URL}"
     }
   }
 }
