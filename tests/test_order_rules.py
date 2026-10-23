@@ -121,7 +121,7 @@ def test_a_dish_not_offered_for_the_event_is_named():
 
 
 # ---- order number, lines and total (P3-6, P3-8; V7, V8) ------------------------------------------------
-def test_the_order_number_is_the_year_and_the_id():
+def test_p3_at17_the_order_number_is_the_year_and_the_id():
     assert order_number(7, datetime(2026, 10, 23, 10, 30)) == "26-0007"
     assert order_number(12345, datetime(2027, 1, 2)) == "27-12345"
 
