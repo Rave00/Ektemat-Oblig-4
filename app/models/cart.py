@@ -6,7 +6,7 @@ every time (P2-3), so the cart never shows an old price or a dish that is no lon
 import re
 from dataclasses import dataclass
 
-from .domain import FoodItem
+from .domain import FoodItem, OrderLine
 
 # Most portions of one dish in one cart. ASSUMPTION: far above the kitchen's stated capacity of about
 # 400 covers a day (lab backlog C-16), so it only stops typing mistakes (P2-2).
@@ -111,3 +111,8 @@ def _check_portions(item, portions):
         raise CartError(f"The minimum order for “{item.name}” is {item.min_order_qty} portions.")
     if portions > MAX_PORTIONS:
         raise CartError("At most 1 000 portions of one dish. For larger events, please contact Ekte Mat.")
+
+
+def order_lines_from(lines):
+    """Turn cart lines into order lines with today's price per person copied in (V7; plan 0, D8)."""
+    return [OrderLine(line.item.id, line.item.name, line.portions, line.item.price_nok) for line in lines]

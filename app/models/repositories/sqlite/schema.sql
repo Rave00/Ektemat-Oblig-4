@@ -41,17 +41,21 @@ CREATE TABLE IF NOT EXISTS food_item_labels (
 );
 
 CREATE TABLE IF NOT EXISTS orders (
-    id               INTEGER PRIMARY KEY,
-    customer_id      INTEGER NOT NULL REFERENCES users(id),
-    event_date       TEXT    NOT NULL,
-    event_type       TEXT    NOT NULL,
-    guest_count      INTEGER NOT NULL CHECK (guest_count > 0),
-    delivery_address TEXT    NOT NULL,
-    status           TEXT    NOT NULL DEFAULT 'submitted'
-                     CHECK (status IN ('submitted', 'approved', 'in_preparation', 'delivered', 'rejected', 'cancelled')),
-    payment_status   TEXT    NOT NULL DEFAULT 'not_paid'
-                     CHECK (payment_status IN ('not_paid', 'deposit_paid', 'invoiced', 'paid')),
-    submitted_at     TEXT    NOT NULL DEFAULT (datetime('now'))
+    id                INTEGER PRIMARY KEY,
+    customer_id       INTEGER NOT NULL REFERENCES users(id),
+    event_type        TEXT    NOT NULL,                                          -- V4
+    event_date        TEXT    NOT NULL,                                          -- YYYY-MM-DD
+    guest_count       INTEGER NOT NULL CHECK (guest_count > 0 AND guest_count <= 400),   -- V5, V6
+    delivery_street   TEXT    NOT NULL,
+    delivery_postcode TEXT    NOT NULL
+                      CHECK (length(delivery_postcode) = 4 AND delivery_postcode NOT GLOB '*[^0-9]*'),  -- V10
+    delivery_city     TEXT    NOT NULL,
+    status            TEXT    NOT NULL DEFAULT 'submitted'
+                      CHECK (status IN ('submitted', 'approved', 'in_preparation', 'delivered', 'rejected', 'cancelled')),
+    payment_status    TEXT    NOT NULL DEFAULT 'not_paid'
+                      CHECK (payment_status IN ('not_paid', 'deposit_paid', 'invoiced', 'paid')),
+    submitted_at      TEXT    NOT NULL,                                          -- YYYY-MM-DD HH:MM:SS
+    submission_key    TEXT    NOT NULL UNIQUE                                    -- one order per click (plan 3; V1)
 );
 
 CREATE TABLE IF NOT EXISTS order_lines (

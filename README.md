@@ -48,7 +48,8 @@ If PowerShell refuses to run `Activate.ps1`, run
 | Customer | kunde2@example.com | customer-dev-2 |
 
 `python seed.py` deletes all existing data (including uploaded pictures) and starts again. Run it again after
-pulling a version that changes the database structure (plan 1 added a column).
+pulling a version that changes the database structure (plan 1 added a column; plan 3 changed the orders
+table). Without it, sending an order fails with "table orders has no column named delivery_street".
 
 ## Structure (Model-View-Controller)
 

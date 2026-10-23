@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Order {{ order.number }} · Ekte Mat Online{% endblock %}
+{% block content %}
+<h1>Booking request <span class="num">{{ order.number }}</span></h1>
+<p class="status-row">
+  <span class="badge badge-on">{{ statuses[order.status] }}</span>
+  <span class="badge">{{ payments[order.payment_status] }}</span>
+  <span class="muted small">Sent {{ order.submitted_at.strftime('%Y-%m-%d %H:%M') }}</span>
+</p>
+{% if order.status == 'submitted' %}
+  <p class="muted">Ekte Mat will check your request and confirm it. The status on this page changes when they do.</p>
+{% endif %}
+
+<div class="order-layout">
+  <section class="panel" aria-labelledby="event-heading">
+    <h2 id="event-heading">Event and delivery</h2>
+    <dl class="facts">
+      <dt>Kind of event</dt><dd>{{ events.get(order.event_type, order.event_type) }}</dd>
+      <dt>Event date</dt><dd>{{ order.event_date.isoformat() }}</dd>
+      <dt>Guests</dt><dd>{{ order.guest_count }}</dd>
+      <dt>Delivery address</dt><dd>{{ order.delivery_street }}<br>{{ order.delivery_postcode }} {{ order.delivery_city }}</dd>
+    </dl>
+  </section>
+
+  <section class="panel" aria-labelledby="groups-heading">
+    <h2 id="groups-heading">Guest groups</h2>
+    {% if order.groups %}
+      <ul class="plain-list group-list">
+        {% for group in order.groups %}
+          <li><strong>{{ group.description }}</strong>: {{ group.size }} {{ 'guest' if group.size == 1 else 'guests' }}
+            {% if group.allergy_notes %}<br><span class="small">Allergies: {{ group.allergy_notes }}</span>{% endif %}
+            {% if group.diet_notes %}<br><span class="small">Dietary needs: {{ group.diet_notes }}</span>{% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted">No guest groups with allergies or dietary needs.</p>
+    {% endif %}
+  </section>
+</div>
+
+<h2>Dishes</h2>
+<div class="table-wrap">
+  <table class="table cart-table">
+    <thead><tr><th scope="col">Dish</th><th scope="col">Portions</th><th scope="col" class="num">Price per person</th>
+               <th scope="col" class="num">Line total</th></tr></thead>
+    <tbody>
+      {% for line in order.lines %}
+        <tr><td data-label="Dish"><strong>{{ line.name }}</strong></td><td data-label="Portions">{{ line.quantity }}</td>
+            <td data-label="Price per person" class="num">{{ line.unit_price_nok|nok }}</td>
+            <td data-label="Line total" class="num">{{ line.total_nok|nok }}</td></tr>
+      {% endfor %}
+    </tbody>
+    <tfoot><tr><th scope="row" colspan="3">Total</th><td class="num total">{{ order.total_nok|nok }}</td></tr></tfoot>
+  </table>
+</div>
+<p class="muted small">Prices as they were when the request was sent. Ekte Mat confirms the final price.</p>
+<p><a class="button secondary" href="{{ url_for('shop.index') }}">Back to the menu</a></p>
+{% endblock %}

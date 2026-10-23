@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% macro error(field) %}{% if errors.get(field) %}<p class="field-error" id="{{ field }}-error">{{ errors[field] }}</p>{% endif %}{% endmacro %}
+{% macro invalid(field) %}{% if errors.get(field) %}aria-invalid="true" aria-describedby="{{ field }}-error"{% endif %}{% endmacro %}
+{% block title %}Send a booking request · Ekte Mat Online{% endblock %}
+{% block content %}
+<h1>Send a booking request</h1>
+{% if errors %}<p class="flash flash-error" role="alert">Please correct the fields marked below. Nothing has been sent yet.</p>{% endif %}
+
+<section class="panel order-summary" aria-labelledby="summary-heading">
+  <h2 id="summary-heading">Your dishes</h2>
+  <ul class="plain-list">
+    {% for line in lines %}<li>{{ line.portions }} × {{ line.item.name }} <span class="muted">({{ line.total_nok|nok }})</span></li>{% endfor %}
+  </ul>
+  <p><strong>Estimated total: {{ total|nok }}</strong> · <a href="{{ url_for('shop.cart') }}">Change the cart</a></p>
+</section>
+
+<form method="post" action="{{ url_for('account.order') }}" class="form order-form" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="submission_key" value="{{ key }}">
+
+  <fieldset>
+    <legend>The event</legend>
+    <div class="three-columns">
+      <div>
+        <label for="event_type">Kind of event</label>
+        <select id="event_type" name="event_type" required {{ invalid('event_type') }}>
+          <option value="">Choose…</option>
+          {% for code, name in events.items() %}
+            <option value="{{ code }}" {% if values.get('event_type') == code %}selected{% endif %}>{{ name }}</option>
+          {% endfor %}
+        </select>
+        {{ error('event_type') }}
+      </div>
+      <div>
+        <label for="event_date">Event date</label>
+        <input id="event_date" name="event_date" type="date" value="{{ values.get('event_date', '') }}"
+               min="{{ min_date }}" max="{{ max_date }}" required {{ invalid('event_date') }}>
+        {{ error('event_date') }}
+      </div>
+      <div>
+        <label for="guest_count">Number of guests</label>
+        <input id="guest_count" name="guest_count" type="number" inputmode="numeric" min="1" max="{{ max_guests }}"
+               step="1" value="{{ values.get('guest_count', '') }}" required {{ invalid('guest_count') }}>
+        {{ error('guest_count') }}
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Delivery address</legend>
+    <label for="delivery_street">Street address</label>
+    <input id="delivery_street" name="delivery_street" value="{{ values.get('delivery_street', '') }}" maxlength="100"
+           autocomplete="street-address" required {{ invalid('delivery_street') }}>
+    {{ error('delivery_street') }}
+    <div class="postcode-row">
+      <div>
+        <label for="delivery_postcode">Postcode</label>
+        <input id="delivery_postcode" name="delivery_postcode" value="{{ values.get('delivery_postcode', '') }}"
+               inputmode="numeric" maxlength="4" autocomplete="postal-code" required {{ invalid('delivery_postcode') }}>
+      </div>
+      <div>
+        <label for="delivery_city">Place</label>
+        <input id="delivery_city" name="delivery_city" value="{{ values.get('delivery_city', '') }}" maxlength="60"
+               autocomplete="address-level2" required {{ invalid('delivery_city') }}>
+      </div>
+    </div>
+    {{ error('delivery_postcode') }}{{ error('delivery_city') }}
+  </fieldset>
+
+  <fieldset>
+    <legend>Guest groups with allergies or dietary needs</legend>
+    <p class="small muted">Only groups that need something special, for example "Nut allergy, 2 guests". Everybody
+      else is counted as having no special needs. <strong>Do not write guest names.</strong> Leave rows empty if you
+      do not need them.</p>
+    <div class="groups">
+      <div class="group-head" aria-hidden="true"><span>Group</span><span>Guests</span><span>Allergies</span><span>Dietary needs</span></div>
+      {% for n in range(1, group_rows + 1) %}
+        <div class="group-row" role="group" aria-label="Guest group {{ n }}">
+          <label class="visually-hidden" for="group_description_{{ n }}">Group {{ n }}: description</label>
+          <input id="group_description_{{ n }}" name="group_description_{{ n }}" maxlength="100"
+                 value="{{ values.get('group_description_' ~ n, '') }}" placeholder="e.g. Nut allergy" {{ invalid('group_' ~ n) }}>
+          <label class="visually-hidden" for="group_size_{{ n }}">Group {{ n }}: number of guests</label>
+          <input id="group_size_{{ n }}" name="group_size_{{ n }}" type="number" inputmode="numeric" min="1" step="1"
+                 value="{{ values.get('group_size_' ~ n, '') }}" placeholder="Guests">
+          <label class="visually-hidden" for="group_allergies_{{ n }}">Group {{ n }}: allergies</label>
+          <input id="group_allergies_{{ n }}" name="group_allergies_{{ n }}" maxlength="300"
+                 value="{{ values.get('group_allergies_' ~ n, '') }}" placeholder="Allergies">
+          <label class="visually-hidden" for="group_diet_{{ n }}">Group {{ n }}: dietary needs</label>
+          <input id="group_diet_{{ n }}" name="group_diet_{{ n }}" maxlength="300"
+                 value="{{ values.get('group_diet_' ~ n, '') }}" placeholder="Dietary needs">
+          {{ error('group_' ~ n) }}
+        </div>
+      {% endfor %}
+    </div>
+    {{ error('groups') }}
+  </fieldset>
+
+  <p class="small muted">No payment now. Ekte Mat checks your request and confirms the order and the final price.</p>
+  <button type="submit" class="button">Send booking request</button>
+</form>
+{% endblock %}

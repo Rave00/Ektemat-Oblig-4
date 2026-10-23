@@ -1,6 +1,7 @@
 # Screenshots for the report
 
-Taken with Playwright after `python seed.py` (synthetic data only).
+Taken with Playwright after `python seed.py` (synthetic data only). From plan 3 on, the browser runs with
+Norwegian settings, so date fields look as they do for Ekte Mat's customers (22.10.2026).
 
 | File | Screen | Requirement |
 |---|---|---|
@@ -13,3 +14,9 @@ Taken with Playwright after `python seed.py` (synthetic data only).
 | `plan2-cart.png` | Customer: cart with three dishes and the estimated total | C2 |
 | `plan2-menu-phone.png` | Customer: menu at phone width (390 px), julebord | C1 |
 | `plan2-cart-phone.png` | Customer: cart at phone width (390 px) | C2 |
+| `plan3-register.png` | Customer: create an account (reached from "Send booking request") | C3 |
+| `plan3-order-form.png` | Customer: order form with the cart summary and guest groups | C3 |
+| `plan3-order-form-errors.png` | Customer: order form with every kind of mistake marked | C3 |
+| `plan3-order-page.png` | Customer: the order page after sending (the receipt) | C3 |
+| `plan3-order-form-phone.png` | Customer: order form at phone width (390 px) | C3 |
+| `plan3-order-page-phone.png` | Customer: order page at phone width (390 px) | C3 |

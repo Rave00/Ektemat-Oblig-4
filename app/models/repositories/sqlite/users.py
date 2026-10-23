@@ -1,5 +1,7 @@
+import sqlite3
+
 from ...domain import User, normalise_email
-from ..base import UserRepository
+from ..base import EmailAlreadyUsed, UserRepository
 
 
 def _to_user(row):
@@ -14,11 +16,16 @@ class SqliteUserRepository(UserRepository):
         self.db = db
 
     def add(self, user):
-        with self.db.connect() as conn:
-            cur = conn.execute(
-                "INSERT INTO users (email, name, password_hash, role) VALUES (?, ?, ?, ?)",
-                (normalise_email(user.email), user.name, user.password_hash, user.role))
-            return self.get_with(conn, cur.lastrowid)
+        try:
+            with self.db.connect() as conn:
+                cur = conn.execute(
+                    "INSERT INTO users (email, name, password_hash, role) VALUES (?, ?, ?, ?)",
+                    (normalise_email(user.email), user.name, user.password_hash, user.role))
+                return self.get_with(conn, cur.lastrowid)
+        except sqlite3.IntegrityError as error:
+            if "users.email" in str(error):                 # UNIQUE constraint failed: users.email
+                raise EmailAlreadyUsed(user.email) from error
+            raise
 
     def get(self, user_id):
         with self.db.connect() as conn:
