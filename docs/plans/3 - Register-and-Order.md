@@ -1,6 +1,6 @@
 # Plan 3: Register and submit an order
 
-- **Status:** Draft, awaiting User1's approval.
+- **Status:** Approved by User1 on 2026-10-23 (no changes requested; P3-4, P3-5, P3-7 and P3-10 confirmed). Not built yet.
 - **Date:** 2026-10-23
 - **Requirements:** C3 ("Log in (or register) and submit the order: event date, number of guests, delivery address,
   and allergy and dietary notes per guest group. No payment solution is needed."). Lab backlog: US-47 (register and
