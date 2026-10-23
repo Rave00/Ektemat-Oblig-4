@@ -27,6 +27,7 @@ python -m pytest                  # all tests
 - Plan first: every larger feature starts as `docs/plans/N - Name-With-Dashes.md`; code only after User1 approves it.
 - Work on a branch `feature/N-name`; User1 reviews and merges on GitHub.
 - All tests pass before every push. New behaviour gets a test.
+- Every feature pull request updates `docs/report-notes.md` (features, screenshots, design evidence for the report).
 - Never import `sqlite3` or the SQLite repositories outside `app/models/repositories/sqlite/`
   (enforced by `tests/test_architecture.py`).
 - Business rules belong in `app/models/`, not in routes. Controllers stay thin.
