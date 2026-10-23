@@ -1,6 +1,7 @@
 # Plan 3: Register and submit an order
 
-- **Status:** Approved by User1 on 2026-10-23 (no changes requested; P3-4, P3-5, P3-7 and P3-10 confirmed). Built in pull request #14, awaiting User1's review.
+- **Status:** Done. Approved by User1 on 2026-10-23 (no changes requested; P3-4, P3-5, P3-7 and P3-10 confirmed);
+  built in pull request #14, merged by User1 on 2026-10-23.
 - **Date:** 2026-10-23
 - **Requirements:** C3 ("Log in (or register) and submit the order: event date, number of guests, delivery address,
   and allergy and dietary notes per guest group. No payment solution is needed."). Lab backlog: US-47 (register and
@@ -173,7 +174,7 @@ problem):
 - [x] Acceptance tests 1-17 pass, plus all earlier tests (218 tests).
 - [x] Every rule test has been seen to fail when its rule is broken on purpose (as in plans 1 and 2).
 - [x] Works from a fresh clone with the README commands.
-- [ ] Works on User1's Windows PC. **Still open: for User1.**
+- [x] Works on User1's Windows PC: 218 passed (2026-10-23).
 - [x] Checked in a browser at 1200 px and 390 px (page width measured on every page); screenshots of the register page,
       the order form with errors and the order page saved in `docs/screenshots/`.
 - [x] This plan gets a "What changed compared with the plan" section (below, written with the code).
@@ -202,4 +203,4 @@ problem):
   Browser check at 1200 px and 390 px: the whole journey from a full cart through register to the order page, every
   kind of mistake on the form, and the admin refused. No page wider than the screen, no server errors; sending the
   order took about 115 ms.
-- **Still open:** the run on User1's Windows PC (Done when, above).
+- **Windows:** User1 ran the tests on Windows on 2026-10-23: 218 passed.
