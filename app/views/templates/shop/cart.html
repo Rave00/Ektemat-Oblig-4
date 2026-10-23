@@ -55,7 +55,10 @@
     </table>
   </div>
   <p class="muted small">Ekte Mat confirms the final price when it approves your order. Discounts and delivery are not included.</p>
-  <p class="button-row"><a class="button secondary" href="{{ url_for('shop.index') }}">Continue shopping</a></p>
+  <p class="button-row">
+    <a class="button" href="{{ url_for('account.order') }}">Send booking request</a>
+    <a class="button secondary" href="{{ url_for('shop.index') }}">Continue shopping</a>
+  </p>
 {% else %}
   <p>Your cart is empty.</p>
   <p><a class="button" href="{{ url_for('shop.index') }}">See the menu</a></p>

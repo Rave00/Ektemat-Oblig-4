@@ -12,5 +12,6 @@
     <input id="password" name="password" type="password" autocomplete="current-password" required>
     <button type="submit" class="button">Log in</button>
   </form>
+  <p class="small">No account? <a href="{{ url_for('account.register', next=next or None) }}">Register</a></p>
 </section>
 {% endblock %}

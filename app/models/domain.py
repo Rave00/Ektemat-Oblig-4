@@ -1,5 +1,7 @@
 """Domain classes for Ekte Mat Online. Plain data and rules: no Flask, no database code."""
+import re
 from dataclasses import dataclass, field
+from datetime import date, datetime, timedelta
 
 # Kinds of event a food item can be offered for (assignment C1; event types in the lab domain model).
 EVENTS = {
@@ -161,3 +163,167 @@ def menu_sections(items, event=None, label=None):
         if dishes:
             sections.append((code, name, dishes))
     return sections
+
+
+# ---- accounts (plan 3, P3-1) ------------------------------------------------------------------------------
+MIN_PASSWORD, MAX_PASSWORD = 10, 200          # ASSUMPTION: 10 characters; no source in the data pack
+_EMAIL = re.compile(r"[^@\s]+@[^@\s]+\.[^@\s]+")   # one @, and a dot somewhere after it
+
+
+def validate_registration(name, email, password, password_again):
+    """{field: message} for every rule a new account breaks; an empty dict means it can be created."""
+    errors = {}
+    if not name.strip():
+        errors["name"] = "Enter your name."
+    elif len(name.strip()) > 100:
+        errors["name"] = "At most 100 characters."
+    if len(email.strip()) > 254 or not _EMAIL.fullmatch(email.strip()):
+        errors["email"] = "Enter an e-mail address such as kari@example.com."
+    if len(password) < MIN_PASSWORD:
+        errors["password"] = f"Use at least {MIN_PASSWORD} characters."
+    elif len(password) > MAX_PASSWORD:
+        errors["password"] = f"At most {MAX_PASSWORD} characters."
+    if password != password_again:
+        errors["password_again"] = "The two passwords are not the same."
+    return errors
+
+
+# ---- orders (plan 3) -----------------------------------------------------------------------------------------
+STATUS_NAMES = {"submitted": "Submitted", "approved": "Approved", "in_preparation": "In preparation",
+                "delivered": "Delivered", "rejected": "Rejected", "cancelled": "Cancelled"}       # plan 0, D10
+PAYMENT_NAMES = {"not_paid": "Not paid", "deposit_paid": "Deposit paid", "invoiced": "Invoiced", "paid": "Paid"}
+
+MAX_GUESTS = 400                 # V6: the event coordinator's daily capacity; lab report on the order data
+MAX_DAYS_AHEAD = 730             # ASSUMPTION: two years, to catch typing mistakes such as 2062 (P3-3)
+GROUP_ROWS = 5                   # guest group rows on the form (P3-4)
+ORDER_LIMITS = {"delivery_street": 100, "delivery_city": 60, "group_description": 100, "group_notes": 300}
+
+
+@dataclass
+class GuestGroup:
+    """Guests with the same allergies or dietary needs. No names: health data stays per group (US-40)."""
+    description: str
+    size: int
+    allergy_notes: str = ""
+    diet_notes: str = ""
+    id: int | None = None
+
+
+@dataclass
+class OrderLine:
+    food_item_id: int
+    name: str                                   # the dish's name, filled in when the order is loaded
+    quantity: int                               # portions
+    unit_price_nok: int                         # price per person when the order was submitted (V7)
+    id: int | None = None
+
+    @property
+    def total_nok(self):
+        return self.quantity * self.unit_price_nok
+
+
+@dataclass
+class Order:
+    customer_id: int | None
+    event_type: str
+    event_date: date | None
+    guest_count: int
+    delivery_street: str
+    delivery_postcode: str
+    delivery_city: str
+    submission_key: str = ""                    # one order per click (P3-7)
+    lines: list[OrderLine] = field(default_factory=list)
+    groups: list[GuestGroup] = field(default_factory=list)
+    status: str = "submitted"
+    payment_status: str = "not_paid"
+    submitted_at: datetime | None = None
+    id: int | None = None
+
+    @property
+    def total_nok(self):
+        """Always the sum of the lines; there is no stored total (V8)."""
+        return sum(line.total_nok for line in self.lines)
+
+    @property
+    def number(self):
+        return order_number(self.id, self.submitted_at)
+
+
+def order_number(order_id, submitted_at):
+    """'26-0007': the year it was submitted and the id, like the old order export (P3-8)."""
+    return f"{submitted_at.year % 100:02d}-{order_id:04d}"
+
+
+def _whole_number(text):
+    text = str(text).strip()
+    return int(text) if re.fullmatch(r"[0-9]{1,7}", text) else None
+
+
+def _date(text):
+    try:
+        return date.fromisoformat(str(text).strip())
+    except ValueError:
+        return None
+
+
+def order_from_form(form, today, dishes):
+    """The order the customer typed (without lines) and {field: message} for every rule it breaks.
+
+    `form` is any mapping of text values (the submitted form), `today` the current date (P3-11) and `dishes` the
+    food items in the cart. Rules: P3-3 to P3-5 and V4, V5, V6, V9, V10 from the lab's order data report.
+    """
+    value = lambda name: str(form.get(name, "")).strip()
+    errors = {}
+
+    event_type = value("event_type")
+    if event_type not in EVENTS:
+        errors["event_type"] = "Choose the kind of event."
+    else:
+        not_offered = [dish.name for dish in dishes if event_type not in dish.events]
+        if not_offered:
+            verb = "is" if len(not_offered) == 1 else "are"
+            errors["event_type"] = f"{', '.join(not_offered)} {verb} not offered for {EVENTS[event_type]}."
+
+    event_date = _date(value("event_date"))
+    if event_date is None:
+        errors["event_date"] = "Enter the event date."
+    elif event_date < today:
+        errors["event_date"] = "The event date cannot be in the past."
+    elif event_date > today + timedelta(days=MAX_DAYS_AHEAD):
+        errors["event_date"] = "The event date can be at most two years ahead."
+
+    guest_count = _whole_number(value("guest_count"))
+    if guest_count is None or not 1 <= guest_count <= MAX_GUESTS:
+        errors["guest_count"] = f"Enter a number of guests between 1 and {MAX_GUESTS}."
+
+    for name, label in (("delivery_street", "the street address"), ("delivery_city", "the place")):
+        if not value(name):
+            errors[name] = f"Enter {label}."
+        elif len(value(name)) > ORDER_LIMITS[name]:
+            errors[name] = f"At most {ORDER_LIMITS[name]} characters."
+    if not re.fullmatch(r"[0-9]{4}", value("delivery_postcode")):
+        errors["delivery_postcode"] = "A postcode has four digits, for example 5003."
+
+    groups = []
+    for n in range(1, GROUP_ROWS + 1):
+        description, size_text = value(f"group_description_{n}"), value(f"group_size_{n}")
+        allergies, diet = value(f"group_allergies_{n}"), value(f"group_diet_{n}")
+        if not any((description, size_text, allergies, diet)):
+            continue                                                     # an empty row is ignored
+        size = _whole_number(size_text)
+        if not description or size is None or size < 1:
+            errors[f"group_{n}"] = "Each group needs a description and a number of guests (at least 1)."
+        elif len(description) > ORDER_LIMITS["group_description"]:
+            errors[f"group_{n}"] = f"The description can be at most {ORDER_LIMITS['group_description']} characters."
+        elif max(len(allergies), len(diet)) > ORDER_LIMITS["group_notes"]:
+            errors[f"group_{n}"] = f"Allergies and dietary needs can be at most {ORDER_LIMITS['group_notes']} characters each."
+        else:
+            groups.append(GuestGroup(description, size, allergies, diet))
+    in_groups = sum(group.size for group in groups)
+    if guest_count and in_groups > guest_count and not any(key.startswith("group_") for key in errors):
+        errors["groups"] = f"The guest groups have {in_groups} guests, but the order is for {guest_count}."
+
+    order = Order(customer_id=None, event_type=event_type, event_date=event_date, guest_count=guest_count or 0,
+                  delivery_street=value("delivery_street"), delivery_postcode=value("delivery_postcode"),
+                  delivery_city=value("delivery_city"), groups=groups)
+    return order, errors

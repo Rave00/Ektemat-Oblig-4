@@ -1,6 +1,6 @@
 # Plan 3: Register and submit an order
 
-- **Status:** Approved by User1 on 2026-10-23 (no changes requested; P3-4, P3-5, P3-7 and P3-10 confirmed). Not built yet.
+- **Status:** Approved by User1 on 2026-10-23 (no changes requested; P3-4, P3-5, P3-7 and P3-10 confirmed). Built in pull request #14, awaiting User1's review.
 - **Date:** 2026-10-23
 - **Requirements:** C3 ("Log in (or register) and submit the order: event date, number of guests, delivery address,
   and allergy and dietary notes per guest group. No payment solution is needed."). Lab backlog: US-47 (register and
@@ -170,9 +170,36 @@ problem):
 
 ## 10. Done when
 
-- [ ] Acceptance tests 1-17 pass, plus all earlier tests.
-- [ ] Every rule test has been seen to fail when its rule is broken on purpose (as in plans 1 and 2).
-- [ ] Works from a fresh clone with the README commands, and on User1's Windows PC.
-- [ ] Checked in a browser at 1200 px and 390 px (page width measured on every page); screenshots of the register page,
+- [x] Acceptance tests 1-17 pass, plus all earlier tests (218 tests).
+- [x] Every rule test has been seen to fail when its rule is broken on purpose (as in plans 1 and 2).
+- [x] Works from a fresh clone with the README commands.
+- [ ] Works on User1's Windows PC. **Still open: for User1.**
+- [x] Checked in a browser at 1200 px and 390 px (page width measured on every page); screenshots of the register page,
       the order form with errors and the order page saved in `docs/screenshots/`.
-- [ ] This plan gets a "What changed compared with the plan" section.
+- [x] This plan gets a "What changed compared with the plan" section (below, written with the code).
+
+## 11. What changed compared with the plan (pull request #14)
+
+- **Built as planned:** P3-1 to P3-11, the database change in section 5, and acceptance tests 1-17 (named
+  `test_p3_at01` to `test_p3_at17`), plus model tests for every rule (`test_order_rules.py`) and the order repository.
+- **Small additions found while building:**
+  - **`get_by_submission_key` in the order repository.** After the first submit the cart is empty, so a repeated
+    form has to be recognised before the cart is checked; `add` alone was not enough for P3-7.
+  - **The app sets the time an order was sent,** instead of the database's `datetime('now')`. SQLite gives that
+    time in UTC, so the order page would have shown 08:35 for an order sent at 10:35 in Bergen (P3-11).
+  - **Status and payment names** (`STATUS_NAMES`, `PAYMENT_NAMES` in `domain.py`) for the order page; plan 4 uses
+    them too.
+  - **Plan 1's test for "an ordered dish cannot be deleted"** now stores its order through the new repository
+    instead of hand-written SQL, which no longer matched the table.
+  - **The README quotes the real error** for a database that was not rebuilt ("table orders has no column named
+    delivery_street"). The first version quoted a message from memory; it was checked against an old database.
+- **Errors caught before merging:** all three came from the browser check, not the tests. At phone width the order
+  form was 460 px wide on a 390 px screen: a `fieldset` never gets narrower than its content unless told so. The
+  heading broke the order number at its hyphen ("26-" / "0001"). The first screenshots showed American dates in
+  the date field (the test browser's language); the browser now runs with Norwegian settings, like the customers'.
+- **Verification:** 218 tests, also from a fresh clone with only the README commands. All 218 passed on the first
+  full run, so 22 rules were then broken on purpose, one at a time, and each was caught by at least one test.
+  Browser check at 1200 px and 390 px: the whole journey from a full cart through register to the order page, every
+  kind of mistake on the form, and the admin refused. No page wider than the screen, no server errors; sending the
+  order took about 115 ms.
+- **Still open:** the run on User1's Windows PC (Done when, above).

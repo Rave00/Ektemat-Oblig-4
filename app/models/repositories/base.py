@@ -5,13 +5,20 @@ implementation knows how or where the data is stored.
 """
 from abc import ABC, abstractmethod
 
-from ..domain import FoodItem, User
+from ..domain import FoodItem, Order, User
+
+
+class EmailAlreadyUsed(Exception):
+    """A user with this e-mail address (in any upper or lower case) already exists.
+
+    Every storage raises this same error, so pages and tests never see a database's own error (plan 6, P6-7).
+    """
 
 
 class UserRepository(ABC):
     @abstractmethod
     def add(self, user: User) -> User:
-        """Store a new user and return it with its id. The e-mail address must be unused."""
+        """Store a new user and return it with its id. Raises EmailAlreadyUsed if the address is taken."""
 
     @abstractmethod
     def get(self, user_id: int) -> User | None:
@@ -48,11 +55,30 @@ class FoodItemRepository(ABC):
         """True if the item is part of any order (then it must not be deleted, only unpublished)."""
 
 
+class OrderRepository(ABC):
+    @abstractmethod
+    def add(self, order: Order) -> Order:
+        """Store an order with its lines and guest groups, all or nothing, and return it as stored.
+
+        If an order with the same submission key already exists, nothing new is stored and that order is
+        returned instead (one order per click, plan 3, P3-7).
+        """
+
+    @abstractmethod
+    def get(self, order_id: int) -> Order | None:
+        """The order with this id, with its lines (and the dishes' names) and guest groups, or None."""
+
+    @abstractmethod
+    def get_by_submission_key(self, key: str) -> Order | None:
+        """The order that was stored from the form with this key, or None."""
+
+
 class Repositories(ABC):
     """All repositories of one storage technology, created once per application."""
 
     users: UserRepository
     food_items: FoodItemRepository
+    orders: OrderRepository
 
     @abstractmethod
     def initialise(self) -> None:

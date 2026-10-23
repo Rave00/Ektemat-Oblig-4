@@ -1,9 +1,11 @@
 """Acceptance tests 1-14 of plan 1 (food items and pictures in the admin panel), through HTTP."""
 import io
+from datetime import date, datetime
 
 import pytest
 from PIL import Image
 
+from app.models.domain import Order, OrderLine
 from conftest import log_in, make_item, picture
 
 FORM = {"name": "Fish soup", "description": "Creamy soup", "price_nok": "189", "min_order_qty": "10",
@@ -97,11 +99,10 @@ def test_at08_a_deleted_item_is_gone(admin, repos, app, tmp_path):
 
 def test_at09_an_item_in_an_order_cannot_be_deleted(admin, repos, users):
     item = repos.food_items.add(make_item(name="Wedding dinner"))
-    with repos.db.connect() as conn:                       # orders arrive in plan 3; add one by hand
-        order = conn.execute("INSERT INTO orders (customer_id, event_date, event_type, guest_count, delivery_address) "
-                             "VALUES (?, '2027-06-19', 'wedding', 120, 'Testgata 1, Bergen')", (users["customer"].id,))
-        conn.execute("INSERT INTO order_lines (order_id, food_item_id, quantity, unit_price_nok) VALUES (?, ?, 120, 875)",
-                     (order.lastrowid, item.id))
+    repos.orders.add(Order(customer_id=users["customer"].id, event_type="wedding", event_date=date(2027, 6, 19),
+                           guest_count=120, delivery_street="Testgata 1", delivery_postcode="5003",
+                           delivery_city="Bergen", submission_key="k1", submitted_at=datetime(2026, 10, 23),
+                           lines=[OrderLine(item.id, "", 120, 875)]))
     admin.post(f"/admin/items/{item.id}/delete")
     assert repos.food_items.get(item.id) is not None
     assert b"is part of an order and cannot be deleted. Unpublish it instead." in admin.get("/admin/items").data

@@ -21,12 +21,12 @@ No names of group members in this file (team rule in `CLAUDE.md`); they go on th
 | Images (A2) | Staff upload a picture, compare it with the current one, then save or discard it. | 1 | `plan1-picture-preview.png` | Done |
 | Menu by event (C1) | Dishes as cards grouped by event, with event and dietary-label filters. | 2 | `plan2-menu.png`, `plan2-menu-wedding.png`, `plan2-menu-phone.png` | Done |
 | Shopping cart (C2) | Add, change and remove dishes; the minimum order is enforced; estimated total in NOK. | 2 | `plan2-cart.png`, `plan2-cart-phone.png` | Done |
-| Register and order (C3) | Register or log in, then submit event, date, guests, address and guest groups. | 3 | (order form, order page) | Planned |
+| Register and order (C3) | Register or log in from the cart, then send event, date, guests, address and guest groups; the order page is the receipt. | 3 | `plan3-register.png`, `plan3-order-form.png`, `plan3-order-form-errors.png`, `plan3-order-page.png`, `plan3-order-form-phone.png`, `plan3-order-page-phone.png` | Done |
 | My orders (C4) | The customer's orders with order status and payment status. | 4 | | Planned |
 | Orders (A3) | All orders, filtered by status and event date; a page per order to manage it. | 4 | | Planned |
 | Questions (C5, A4) | Questions about an order, and Ekte Mat's answers. | 5 | | Planned |
 
-Screens the report must show (section 5.2): menu (done), cart (done), order form (plan 3), my orders (plan 4),
+Screens the report must show (section 5.2): menu (done), cart (done), order form (done), my orders (plan 4),
 questions (plan 5), food item (done), image (done), order list (plan 4), order page (plan 4).
 
 ## 3. Software design: what was used and how
@@ -40,7 +40,7 @@ questions (plan 5), food item (done), image (done), order list (plan 4), order p
 | State machine for the order | `docs/design/02_uml_state-order.*` | Basis for the order statuses (plan 0, D10), simplified to the names in Oblig 4; enforced in plan 4. |
 | BPMN TO-BE process | `docs/design/02_bpmn_tobe-order-process.*` | The process the site supports: the customer sends a request online, staff approve it. |
 | MVC architecture | plan 0, section 2; `tests/test_architecture.py` | Folders `models`, `views`, `controllers`; a test fails if SQLite is used outside the repository classes, so Neo4j can replace it (plan 6). |
-| Data analysis rules V1-V10 | lab `04_report_order-data-quality.md`; plan 3, section 4 | Ten problems found in 820 old orders became form rules and database checks. |
+| Data analysis rules V1-V10 | lab `04_report_order-data-quality.md`; plan 3, section 4 | Ten problems found in 820 rows of old orders became form rules and database checks, for example "guests 1-400" (V5, V6) and "postcode four digits" (V10), which is why the address has three fields. |
 | Graph data model | plan 6 (draft) | How the same data will look in Neo4j for Oblig 5. |
 
 ## 4. Did design help? Evidence collected while building
@@ -54,8 +54,12 @@ questions (plan 5), food item (done), image (done), order list (plan 4), order p
   milk. US-02's goal ("choose safe food for my guests") justified a new rule (P2-8), marked as an assumption.
 - **US-47 criterion 3 → plan 2:** "the cart is still there afterwards" showed, while planning, that logging in wiped
   the cart. It was fixed in plan 2 (P2-9), before plan 3 needed it.
-- **Data analysis → plan 3:** the lab's V1-V10 became validation rules; V1 (orders entered twice) led to protection
-  against double clicks (P3-7).
+- **Data analysis → plan 3:** the lab's V1-V10 became validation rules and database checks; V1 (orders entered
+  twice) led to protection against double clicks (P3-7), and V10 (wrong postcodes) split the address into three fields.
+- **US-40 and the GDPR note → plan 3:** allergies are stored per guest group with a count, and the order form has no
+  name field and asks customers not to write names.
+- **Plan 6's promise → plan 3:** plan 6 (P6-7) had asked for one storage-neutral error for a taken e-mail address;
+  plan 3 added it, so the registration page does not depend on SQLite.
 - **Repository pattern (plan 0, D3-D4) → plan 6:** a teammate could plan the Neo4j storage without touching any page
   or route.
 
@@ -69,11 +73,14 @@ questions (plan 5), food item (done), image (done), order list (plan 4), order p
 - Bugs that only the browser check found: a file picker wider than its column (plan 1), and cart lines in a strange
   order (plan 2).
 - Breaking each rule on purpose found a gap in the tests: in plan 2, the menu's "published only" check in the model
-  was untested.
+  was untested. In plan 3 all 218 tests passed at once, so the same check (22 rules) was used to show they really
+  test something.
+- Plan 3: the README first quoted an error message from memory; it was checked against an old database and corrected.
+  The browser check found the order form too wide for a phone, and screenshots with American dates.
 
 **Decisions made by the team, not the agent:** SQLite for Oblig 4 and Neo4j later; every plan approved before code
 (plan 0 with a file-name change; plans 1-3 with no changes, P2-5 "fine for now"); guest groups, strict event
 matching, double-click protection and customer-only ordering confirmed in plan 3; the owner called User1 in every file; course staff access not
 needed.
 
-**Numbers:** tests after each plan: 22 (plan 0), 71 (plan 1 and the privacy test), 147 (plan 2).
+**Numbers:** tests after each plan: 22 (plan 0), 71 (plan 1 and the privacy test), 147 (plan 2), 218 (plan 3).
