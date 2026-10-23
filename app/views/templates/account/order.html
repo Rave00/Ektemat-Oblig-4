@@ -9,6 +9,15 @@
 </p>
 {% if order.status == 'submitted' %}
   <p class="muted">Ekte Mat will check your request and confirm it. The status on this page changes when they do.</p>
+{% elif order.status == 'approved' %}
+  <p>Ekte Mat has confirmed your booking.</p>
+{% elif order.status == 'in_preparation' %}
+  <p>The kitchen is preparing your food.</p>
+{% elif order.status == 'delivered' %}
+  <p>Your food has been delivered. Thank you for ordering from Ekte Mat.</p>
+{% elif order.status in ('rejected', 'cancelled') %}
+  <p class="flash flash-error">{{ 'Ekte Mat could not accept this request.' if order.status == 'rejected' else 'This order has been cancelled.' }}
+    {% if order.status_reason %}<br><strong>Reason:</strong> {{ order.status_reason }}{% endif %}</p>
 {% endif %}
 
 <div class="order-layout">
@@ -55,5 +64,6 @@
   </table>
 </div>
 <p class="muted small">Prices as they were when the request was sent. Ekte Mat confirms the final price.</p>
-<p><a class="button secondary" href="{{ url_for('shop.index') }}">Back to the menu</a></p>
+<p class="button-row"><a class="button secondary" href="{{ url_for('account.my_orders') }}">All my orders</a>
+  <a href="{{ url_for('shop.index') }}">Back to the menu</a></p>
 {% endblock %}

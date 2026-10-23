@@ -3,7 +3,10 @@
 A storage technology (SQLite now, Neo4j in Oblig 5) implements these classes. Nothing outside the
 implementation knows how or where the data is stored.
 """
+from __future__ import annotations      # type hints as text: the method `list` must not hide list[...]
+
 from abc import ABC, abstractmethod
+from datetime import date
 
 from ..domain import FoodItem, Order, User
 
@@ -71,6 +74,27 @@ class OrderRepository(ABC):
     @abstractmethod
     def get_by_submission_key(self, key: str) -> Order | None:
         """The order that was stored from the form with this key, or None."""
+
+    @abstractmethod
+    def list(self, status: str | None = None, date_from: date | None = None,
+             date_to: date | None = None) -> list[Order]:
+        """All orders with their lines and the customer's name and e-mail, soonest event date first (plan 4, P4-6).
+
+        Only one status if `status` is given; only event dates from `date_from` to `date_to`, both days included.
+        """
+
+    @abstractmethod
+    def list_for_customer(self, customer_id: int) -> list[Order]:
+        """One customer's orders with their lines, newest first (plan 4, P4-8)."""
+
+    @abstractmethod
+    def update_status(self, order: Order, expected_status: str) -> bool:
+        """Save the order's status, status reason and first reply time, but only if the stored status is still
+        `expected_status` (plan 4, P4-4). Returns False, and saves nothing, if someone changed it in the meantime."""
+
+    @abstractmethod
+    def update_payment_status(self, order_id: int, payment_status: str) -> None:
+        """Save a new payment status (plan 4, P4-5)."""
 
 
 class Repositories(ABC):

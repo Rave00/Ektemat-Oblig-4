@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Orders · Admin · Ekte Mat Online{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{{ url_for('admin.index') }}">Admin</a> / Orders</p>
+<h1>Orders</h1>
+
+<nav class="filters" aria-label="Filter by status">
+  <a href="{{ url_for('admin.orders', date_from=date_from or None, date_to=date_to or None) }}"{% if not status %} aria-current="page"{% endif %}>All ({{ total }})</a>
+  {% for code, name in statuses.items() %}
+    <a href="{{ url_for('admin.orders', status=code, date_from=date_from or None, date_to=date_to or None) }}"{% if status == code %} aria-current="page"{% endif %}>{{ name }} ({{ counts[code] }})</a>
+  {% endfor %}
+</nav>
+
+<form method="get" action="{{ url_for('admin.orders') }}" class="date-filter">
+  {% if status %}<input type="hidden" name="status" value="{{ status }}">{% endif %}
+  <label for="date_from">Event date from</label>
+  <input id="date_from" name="date_from" type="date" value="{{ date_from }}">
+  <label for="date_to">to</label>
+  <input id="date_to" name="date_to" type="date" value="{{ date_to }}">
+  <button type="submit" class="button">Show</button>
+  {% if date_from or date_to %}<a href="{{ url_for('admin.orders', status=status) }}">Clear dates</a>{% endif %}
+</form>
+
+{% if problem %}
+  <p class="flash flash-error" role="alert">{{ problem }} No orders are shown until the dates are corrected.</p>
+{% elif orders %}
+  <div class="table-wrap">
+    <table class="table cart-table orders-table">
+      <thead>
+        <tr><th scope="col">Order</th><th scope="col">Received</th><th scope="col">Event date</th><th scope="col">Event</th>
+            <th scope="col">Customer</th><th scope="col">Guests</th><th scope="col" class="num">Total</th>
+            <th scope="col">Status</th><th scope="col">Payment</th></tr>
+      </thead>
+      <tbody>
+        {% for order in orders %}
+          <tr{% if order.id in late %} class="late"{% endif %} data-order="{{ order.number }}">
+            <td data-label="Order"><a href="{{ url_for('admin.order', order_id=order.id) }}"><strong class="num">{{ order.number }}</strong></a></td>
+            <td data-label="Received" class="num">{{ order.submitted_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td data-label="Event date" class="num">{{ order.event_date.isoformat() }}</td>
+            <td data-label="Event">{{ events.get(order.event_type, order.event_type) }}</td>
+            <td data-label="Customer">{{ order.customer_name }}</td>
+            <td data-label="Guests">{{ order.guest_count }}</td>
+            <td data-label="Total" class="num">{{ order.total_nok|nok }}</td>
+            <td data-label="Status"><span class="badge status-{{ order.status }}">{{ statuses[order.status] }}</span>
+              {% if order.id in late %}<span class="late-note">Waiting more than 24 hours</span>{% endif %}</td>
+            <td data-label="Payment">{{ payments[order.payment_status] }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <p class="muted">No orders match this choice.</p>
+{% endif %}
+{% endblock %}

@@ -237,6 +237,10 @@ class Order:
     status: str = "submitted"
     payment_status: str = "not_paid"
     submitted_at: datetime | None = None
+    status_reason: str = ""                     # why staff rejected or cancelled it (plan 4, P4-2)
+    first_replied_at: datetime | None = None    # first time it left "submitted" (plan 4, P4-3; NFR-19)
+    customer_name: str = ""                     # filled in when orders are loaded, for the staff pages
+    customer_email: str = ""
     id: int | None = None
 
     @property
@@ -327,3 +331,58 @@ def order_from_form(form, today, dishes):
                   delivery_street=value("delivery_street"), delivery_postcode=value("delivery_postcode"),
                   delivery_city=value("delivery_city"), groups=groups)
     return order, errors
+
+
+# ---- reply times and the staff list's date filter (plan 4, P4-3 and P4-6) ------------------------------------
+REPLY_LIMIT = timedelta(hours=24)    # US-17 criterion 2, NFR-05, NFR-19. ASSUMPTION: clock hours, nights included
+
+
+def waiting_too_long(order, now):
+    """US-17 criterion 2: still submitted more than 24 hours after it arrived."""
+    return order.status == "submitted" and now - order.submitted_at > REPLY_LIMIT
+
+
+@dataclass
+class ReplyMonth:
+    month: str                       # "2026-10": the month the orders arrived
+    within: int = 0                  # first reply within 24 hours
+    later: int = 0                   # first reply after more than 24 hours
+    waiting: int = 0                 # no reply yet
+
+    @property
+    def total(self):
+        return self.within + self.later + self.waiting
+
+    @property
+    def share_within(self):
+        return self.within / self.total if self.total else 0.0
+
+
+def reply_stats(orders):
+    """NFR-19: per month in which orders arrived, how many were answered within 24 hours; newest month first."""
+    months = {}
+    for order in orders:
+        month = months.setdefault(order.submitted_at.strftime("%Y-%m"), ReplyMonth(order.submitted_at.strftime("%Y-%m")))
+        if order.first_replied_at is None:
+            month.waiting += 1
+        elif order.first_replied_at - order.submitted_at <= REPLY_LIMIT:
+            month.within += 1
+        else:
+            month.later += 1
+    return sorted(months.values(), key=lambda m: m.month, reverse=True)
+
+
+def date_filter(date_from_text, date_to_text):
+    """The staff list's event-date filter: (from, to, message). With a message, the list must show no rows (P4-6)."""
+    dates = []
+    for text in (date_from_text, date_to_text):
+        text = (text or "").strip()
+        if not text:
+            dates.append(None)
+        elif _date(text) is None:
+            return None, None, f"“{text}” is not a date. Use the date picker or write YYYY-MM-DD."
+        else:
+            dates.append(_date(text))
+    if dates[0] and dates[1] and dates[0] > dates[1]:
+        return None, None, "The “from” date is after the “to” date."
+    return dates[0], dates[1], ""

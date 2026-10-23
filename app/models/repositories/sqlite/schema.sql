@@ -55,7 +55,9 @@ CREATE TABLE IF NOT EXISTS orders (
     payment_status    TEXT    NOT NULL DEFAULT 'not_paid'
                       CHECK (payment_status IN ('not_paid', 'deposit_paid', 'invoiced', 'paid')),
     submitted_at      TEXT    NOT NULL,                                          -- YYYY-MM-DD HH:MM:SS
-    submission_key    TEXT    NOT NULL UNIQUE                                    -- one order per click (plan 3; V1)
+    submission_key    TEXT    NOT NULL UNIQUE,                                   -- one order per click (plan 3; V1)
+    status_reason     TEXT,                                                      -- plan 4, P4-2
+    first_replied_at  TEXT                                                       -- plan 4, P4-3 (NFR-19)
 );
 
 CREATE TABLE IF NOT EXISTS order_lines (

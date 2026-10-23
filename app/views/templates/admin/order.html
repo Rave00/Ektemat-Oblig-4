@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Order {{ order.number }} · Admin · Ekte Mat Online{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{{ url_for('admin.index') }}">Admin</a> / <a href="{{ url_for('admin.orders') }}">Orders</a> /
+  {{ order.number }}</p>
+<h1>Order <span class="num">{{ order.number }}</span></h1>
+<p class="status-row">
+  <span class="badge status-{{ order.status }}">{{ statuses[order.status] }}</span>
+  <span class="badge">{{ payments[order.payment_status] }}</span>
+  <span class="muted small">Received {{ order.submitted_at.strftime('%Y-%m-%d %H:%M') }}{% if order.first_replied_at %} · first reply {{ order.first_replied_at.strftime('%Y-%m-%d %H:%M') }}{% endif %}</span>
+  {% if late %}<span class="late-note">Waiting more than 24 hours</span>{% endif %}
+</p>
+{% if order.status_reason %}<p><strong>Reason given to the customer:</strong> {{ order.status_reason }}</p>{% endif %}
+
+<div class="order-layout">
+  <section class="panel" aria-labelledby="manage-heading">
+    <h2 id="manage-heading">Manage</h2>
+    {% if next_statuses %}
+      <div class="status-actions">
+        {% for new in next_statuses %}
+          <form method="post" action="{{ url_for('admin.order_status', order_id=order.id) }}" class="status-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="expected_status" value="{{ order.status }}">
+            <input type="hidden" name="status" value="{{ new }}">
+            {% if new in needs_reason %}
+              <label for="reason-{{ new }}">{{ 'Why it is rejected' if new == 'rejected' else 'Why it is cancelled' }} <span class="muted small">(shown to the customer)</span></label>
+              <textarea id="reason-{{ new }}" name="reason" rows="2" maxlength="300" required></textarea>
+            {% endif %}
+            <button type="submit" data-status="{{ new }}" class="button{% if new in needs_reason %} secondary danger-button{% endif %}">{{ actions[new] }}</button>
+          </form>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="muted">{{ statuses[order.status] }} is a final status: the order cannot be changed any more.</p>
+    {% endif %}
+
+    <form method="post" action="{{ url_for('admin.order_payment', order_id=order.id) }}" class="payment-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label for="payment_status">Payment status</label>
+      <select id="payment_status" name="payment_status">
+        {% for code, name in payments.items() %}
+          <option value="{{ code }}" {% if order.payment_status == code %}selected{% endif %}>{{ name }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="button secondary">Save payment status</button>
+    </form>
+  </section>
+
+  <section class="panel" aria-labelledby="customer-heading">
+    <h2 id="customer-heading">Customer and event</h2>
+    <dl class="facts">
+      <dt>Customer</dt><dd>{{ order.customer_name }}<br><a href="mailto:{{ order.customer_email }}">{{ order.customer_email }}</a></dd>
+      <dt>Kind of event</dt><dd>{{ events.get(order.event_type, order.event_type) }}</dd>
+      <dt>Event date</dt><dd>{{ order.event_date.isoformat() }}</dd>
+      <dt>Guests</dt><dd>{{ order.guest_count }}</dd>
+      <dt>Delivery address</dt><dd>{{ order.delivery_street }}<br>{{ order.delivery_postcode }} {{ order.delivery_city }}</dd>
+    </dl>
+  </section>
+</div>
+
+<section class="panel" aria-labelledby="groups-heading">
+  <h2 id="groups-heading">Guest groups: allergies and dietary needs</h2>
+  {% if order.groups %}
+    <ul class="plain-list group-list">
+      {% for group in order.groups %}
+        <li><strong>{{ group.description }}</strong>: {{ group.size }} {{ 'guest' if group.size == 1 else 'guests' }}
+          {% if group.allergy_notes %}<br><span class="allergy">Allergies: {{ group.allergy_notes }}</span>{% endif %}
+          {% if group.diet_notes %}<br><span class="small">Dietary needs: {{ group.diet_notes }}</span>{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">No guest groups with allergies or dietary needs.</p>
+  {% endif %}
+</section>
+
+<h2>Dishes</h2>
+<div class="table-wrap">
+  <table class="table cart-table">
+    <thead><tr><th scope="col">Dish</th><th scope="col">Portions</th><th scope="col" class="num">Price per person</th>
+               <th scope="col" class="num">Line total</th></tr></thead>
+    <tbody>
+      {% for line in order.lines %}
+        <tr><td data-label="Dish"><strong>{{ line.name }}</strong></td><td data-label="Portions">{{ line.quantity }}</td>
+            <td data-label="Price per person" class="num">{{ line.unit_price_nok|nok }}</td>
+            <td data-label="Line total" class="num">{{ line.total_nok|nok }}</td></tr>
+      {% endfor %}
+    </tbody>
+    <tfoot><tr><th scope="row" colspan="3">Total</th><td class="num total">{{ order.total_nok|nok }}</td></tr></tfoot>
+  </table>
+</div>
+<p class="muted small">Prices as they were when the customer sent the request.</p>
+{% endblock %}

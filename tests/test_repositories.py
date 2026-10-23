@@ -1,11 +1,12 @@
 import sqlite3
+from dataclasses import replace
 from datetime import date, datetime
 
 import pytest
 
 from app.models.domain import GuestGroup, Order, OrderLine, User
 from app.models.repositories.base import EmailAlreadyUsed
-from conftest import make_item
+from conftest import make_item, make_order
 
 
 def test_user_is_found_by_email_regardless_of_case(repos):
@@ -111,3 +112,77 @@ def test_the_database_also_refuses_impossible_orders(repos, customer, changes):
         setattr(order, name, value)
     with pytest.raises(sqlite3.IntegrityError):
         repos.orders.add(order)
+
+
+# ---- orders in plan 4: lists, status changes, payment, new columns ----------------------------------------
+def test_staff_list_has_the_customer_and_is_sorted_by_event_date(repos, customer):
+    dish = repos.food_items.add(make_item())
+    later = make_order(repos, customer.id, dish.id, event_date=date(2027, 3, 1))
+    sooner = make_order(repos, customer.id, dish.id, event_date=date(2027, 1, 1))
+    listed = repos.orders.list()
+    assert [o.id for o in listed] == [sooner.id, later.id]
+    assert (listed[0].customer_name, listed[0].customer_email) == ("Kari", "kari@test.example")
+    assert listed[0].total_nok == 1890                     # the lines come with the list
+
+
+def test_staff_list_filters_on_status_and_event_dates(repos, customer):
+    dish = repos.food_items.add(make_item())
+    a = make_order(repos, customer.id, dish.id, event_date=date(2027, 1, 1))
+    b = make_order(repos, customer.id, dish.id, event_date=date(2027, 1, 15), status="approved",
+                   first_replied_at=datetime(2026, 10, 23))
+    make_order(repos, customer.id, dish.id, event_date=date(2027, 2, 1))
+    assert [o.id for o in repos.orders.list(status="approved")] == [b.id]
+    assert [o.id for o in repos.orders.list(date_from=date(2027, 1, 1), date_to=date(2027, 1, 15))] == [a.id, b.id]
+    assert [o.id for o in repos.orders.list(date_to=date(2027, 1, 1))] == [a.id]
+
+
+def test_a_customers_list_is_theirs_only_newest_first(repos, customer):
+    dish = repos.food_items.add(make_item())
+    other = repos.users.add(User(email="nils@test.example", name="Nils", role="customer", password_hash="x"))
+    old = make_order(repos, customer.id, dish.id, submitted_at=datetime(2026, 10, 1, 9, 0))
+    new = make_order(repos, customer.id, dish.id, submitted_at=datetime(2026, 10, 20, 9, 0))
+    make_order(repos, other.id, dish.id)
+    assert [o.id for o in repos.orders.list_for_customer(customer.id)] == [new.id, old.id]
+
+
+def test_a_status_change_is_saved_only_if_the_status_is_still_the_expected_one(repos, customer):
+    dish = repos.food_items.add(make_item())
+    stored = make_order(repos, customer.id, dish.id)
+    approved = replace(stored, status="approved", first_replied_at=datetime(2026, 10, 23, 12, 0))
+    assert repos.orders.update_status(approved, expected_status="submitted") is True
+    rejected = replace(stored, status="rejected", status_reason="Too late", first_replied_at=datetime(2026, 10, 23, 13))
+    assert repos.orders.update_status(rejected, expected_status="submitted") is False       # someone was faster
+    loaded = repos.orders.get(stored.id)
+    assert (loaded.status, loaded.status_reason, loaded.first_replied_at) == ("approved", "", datetime(2026, 10, 23, 12))
+
+
+def test_the_payment_status_is_saved(repos, customer):
+    dish = repos.food_items.add(make_item())
+    stored = make_order(repos, customer.id, dish.id)
+    repos.orders.update_payment_status(stored.id, "deposit_paid")
+    assert repos.orders.get(stored.id).payment_status == "deposit_paid"
+    with pytest.raises(sqlite3.IntegrityError):
+        repos.orders.update_payment_status(stored.id, "refunded")                      # the database refuses it too
+
+
+def test_p4_at18_the_new_columns_are_added_to_an_old_database(tmp_path):
+    from app.models.repositories.sqlite import SqliteRepositories
+    path = tmp_path / "plan3.db"
+    with sqlite3.connect(path) as conn:                    # the orders table as plan 3 left it
+        conn.executescript("""
+            CREATE TABLE users (id INTEGER PRIMARY KEY, email TEXT NOT NULL UNIQUE, name TEXT NOT NULL,
+                                password_hash TEXT NOT NULL, role TEXT NOT NULL, created_at TEXT);
+            CREATE TABLE orders (id INTEGER PRIMARY KEY, customer_id INTEGER NOT NULL, event_type TEXT NOT NULL,
+                event_date TEXT NOT NULL, guest_count INTEGER NOT NULL, delivery_street TEXT NOT NULL,
+                delivery_postcode TEXT NOT NULL, delivery_city TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'submitted',
+                payment_status TEXT NOT NULL DEFAULT 'not_paid', submitted_at TEXT NOT NULL,
+                submission_key TEXT NOT NULL UNIQUE);
+            INSERT INTO users VALUES (1, 'kari@test.example', 'Kari', 'x', 'customer', NULL);
+            INSERT INTO orders (customer_id, event_type, event_date, guest_count, delivery_street, delivery_postcode,
+                delivery_city, submitted_at, submission_key)
+                VALUES (1, 'wedding', '2027-06-19', 80, 'Bryggen 1', '5003', 'Bergen', '2026-10-22 10:00:00', 'old');
+        """)
+    repos = SqliteRepositories(path)
+    repos.initialise()
+    order = repos.orders.get(1)
+    assert (order.guest_count, order.status_reason, order.first_replied_at) == (80, "", None)

@@ -20,3 +20,10 @@ Norwegian settings, so date fields look as they do for Ekte Mat's customers (22.
 | `plan3-order-page.png` | Customer: the order page after sending (the receipt) | C3 |
 | `plan3-order-form-phone.png` | Customer: order form at phone width (390 px) | C3 |
 | `plan3-order-page-phone.png` | Customer: order page at phone width (390 px) | C3 |
+| `plan4-my-orders.png` | Customer: My orders with status and payment status | C4 |
+| `plan4-my-orders-phone.png` | Customer: My orders at phone width (390 px) | C4 |
+| `plan4-order-list.png` | Admin: all orders, status filters with counts, one highlighted after 24 hours | A3 |
+| `plan4-order-list-filtered.png` | Admin: orders filtered by event date | A3 |
+| `plan4-order-page-admin.png` | Admin: order page with the allowed status changes and the payment status | A3 |
+| `plan4-order-page-admin-phone.png` | Admin: order page at phone width (390 px), after approving | A3 |
+| `plan4-dashboard.png` | Admin: dashboard with waiting orders and the share answered within 24 hours | A3, NFR-19 |

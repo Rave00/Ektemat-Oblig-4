@@ -6,7 +6,7 @@ import pytest
 from PIL import Image
 
 from app.models.domain import Order, OrderLine
-from conftest import log_in, make_item, picture
+from conftest import log_in, make_item, make_order, picture
 
 FORM = {"name": "Fish soup", "description": "Creamy soup", "price_nok": "189", "min_order_qty": "10",
         "events": ["conference"], "allergens": ["fish", "milk"]}
@@ -108,19 +108,21 @@ def test_at09_an_item_in_an_order_cannot_be_deleted(admin, repos, users):
     assert b"is part of an order and cannot be deleted. Unpublish it instead." in admin.get("/admin/items").data
 
 
-def admin_urls(app, item_id):
+def admin_urls(app, item_id, order_id):
     """Every GET and POST address in the admin panel, including routes added after this test was written."""
     for rule in app.url_map.iter_rules():
         if rule.endpoint.startswith("admin."):
-            url = rule.rule.replace("<int:item_id>", str(item_id))
+            url = rule.rule.replace("<int:item_id>", str(item_id)).replace("<int:order_id>", str(order_id))
+            assert "<" not in url, f"fill in the new placeholder in {url}"
             for method in sorted(rule.methods & {"GET", "POST"}):
                 yield method, url
 
 
 def test_at10_customers_and_visitors_cannot_use_any_admin_page(app, client, repos, users):
     item = repos.food_items.add(make_item(name="Untouched", published=False))
-    urls = list(admin_urls(app, item.id))
-    assert len(urls) >= 11
+    order = make_order(repos, users["customer"].id, item.id)
+    urls = list(admin_urls(app, item.id, order.id))
+    assert len(urls) >= 15 and any("/orders/" in url for _, url in urls)
     for method, url in urls:
         response = client.open(url, method=method, data=FORM)
         assert response.status_code == 302 and "/account/login" in response.headers["Location"], (method, url)
@@ -128,6 +130,7 @@ def test_at10_customers_and_visitors_cannot_use_any_admin_page(app, client, repo
     for method, url in urls:
         assert client.open(url, method=method, data=FORM).status_code == 403, (method, url)
     assert repos.food_items.list() == [item], "nothing may change"
+    assert repos.orders.get(order.id) == order, "nothing may change"
 
 
 def test_at11_upload_shows_a_preview_and_changes_nothing_yet(admin, repos):
