@@ -1,6 +1,6 @@
 # Plan 4: My orders, and orders in the admin panel
 
-- **Status:** Draft, awaiting User1's approval.
+- **Status:** Approved by User1 on 2026-10-23 (no changes requested). Not built yet.
 - **Date:** 2026-10-23
 - **Requirements:** C4 ("The customer's own orders with their current status ... and payment status") and A3 ("A list
   of all customer orders that can be filtered by status and event date, and a page per order to manage it: order
