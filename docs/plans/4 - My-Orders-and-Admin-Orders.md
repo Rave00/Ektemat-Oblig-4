@@ -1,6 +1,6 @@
 # Plan 4: My orders, and orders in the admin panel
 
-- **Status:** Approved by User1 on 2026-10-23 (no changes requested). Not built yet.
+- **Status:** Approved by User1 on 2026-10-23 (no changes requested). Built in pull request #16, awaiting User1's review.
 - **Date:** 2026-10-23
 - **Requirements:** C4 ("The customer's own orders with their current status ... and payment status") and A3 ("A list
   of all customer orders that can be filtered by status and event date, and a page per order to manage it: order
@@ -151,9 +151,39 @@ Every status and payment change is a POST form with the CSRF token (team rule).
 
 ## 8. Done when
 
-- [ ] Acceptance tests 1-18 pass, plus all earlier tests.
-- [ ] Every rule test has been seen to fail when its rule is broken on purpose (as in plans 1-3).
-- [ ] Works from a fresh clone with the README commands, and on User1's Windows PC.
-- [ ] Checked in a browser at 1200 px and 390 px (page width measured on every page); screenshots of My orders, the
+- [x] Acceptance tests 1-18 pass, plus all earlier tests (282 tests).
+- [x] Every rule test has been seen to fail when its rule is broken on purpose (as in plans 1-3).
+- [x] Works from a fresh clone with the README commands.
+- [ ] Works on User1's Windows PC. **Still open: for User1.**
+- [x] Checked in a browser at 1200 px and 390 px (page width measured on every page); screenshots of My orders, the
       order list (with a filter) and the staff order page saved in `docs/screenshots/`.
-- [ ] `docs/report-notes.md` updated, and this plan gets a "What changed compared with the plan" section.
+- [x] `docs/report-notes.md` updated, and this plan gets a "What changed compared with the plan" section (below).
+
+## 9. What changed compared with the plan (pull request #16)
+
+- **Built as planned:** P4-1 to P4-10 and acceptance tests 1-18: `test_p4_at01` to `test_p4_at14` in
+  `test_orders_pages.py`; 15 is `test_at10` in `test_admin_items.py` (it now fills in order ids); 16 in
+  `test_order_status.py`, 17 in `test_shop_and_seed.py`, 18 in `test_repositories.py`.
+- **Changed on the way:**
+  - **The delivered sample order has its event in the past** (a delivered order must). Test 17 therefore checks every
+    sample order with V9 as on the day it was sent, instead of "no event date in the past" (P4-9).
+  - **Buttons are named as actions:** "Approve", "Reject", "Cancel order", "Start preparation", "Mark as delivered".
+    A button that only said "Cancel" could be read as "never mind".
+  - **Each status form carries its status in a hidden field.** The browser check sent the Reject form from a script,
+    without clicking its button, and the server got no status: the status only travelled in the clicked button's
+    `name` and `value`. It answered "An order that is Submitted cannot become ." Now the form itself carries the
+    status, and a missing or unknown status gives "Unknown status." (a new test).
+  - The repository loads the lines and groups for a whole list in three queries, not three per order.
+  - `base.py` starts with `from __future__ import annotations`: the new method called `list` hid Python's own `list`
+    in the type hints after it, and every test stopped at import.
+  - In the reply table, "still waiting" also counts orders that are younger than 24 hours; the share is "within 24
+    hours" out of all orders that arrived that month.
+- **Errors caught before merging:** the `list` type-hint trap (the tests failed to start); from the browser check:
+  the Reject and Cancel buttons were green instead of red (a more specific CSS rule won), the two reason fields had
+  the same label, and the missing-status message above. The static check found an unused import in a test.
+- **Verification:** 282 tests, also from a fresh clone with only the README commands. 21 rules were broken on purpose,
+  one at a time, and each was caught; "the payment form is open to everyone" was caught only by the every-admin-route
+  test, because it now fills in order ids. Browser check at 1200 px and 390 px for customer and staff, including an
+  old tab trying to reject an order that was already approved. The database left by plan 3's browser check was
+  started with the new code: both columns were added and its order was kept (P4-10). No server errors.
+- **Still open:** the run on User1's Windows PC (Done when, above).

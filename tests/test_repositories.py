@@ -1,6 +1,6 @@
 import sqlite3
 from dataclasses import replace
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 
 import pytest
 
