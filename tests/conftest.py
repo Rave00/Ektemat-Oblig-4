@@ -1,11 +1,13 @@
 import io
+import secrets
+from datetime import date, datetime, timedelta
 
 import pytest
 from PIL import Image
 from werkzeug.security import generate_password_hash
 
 from app import create_app
-from app.models.domain import FoodItem, User
+from app.models.domain import FoodItem, Order, OrderLine, User
 
 
 @pytest.fixture
@@ -59,3 +61,13 @@ def admin(client, users):
     """A test client logged in as the admin."""
     log_in(client, "admin@test.example")
     return client
+
+
+def make_order(repos, customer_id, item_id, **changes):
+    """Store an order straight through the repository (plan 4 tests); 10 portions at 189 NOK unless changed."""
+    values = dict(customer_id=customer_id, event_type="conference", event_date=date.today() + timedelta(days=30),
+                  guest_count=40, delivery_street="Bryggen 1", delivery_postcode="5003", delivery_city="Bergen",
+                  submission_key=secrets.token_hex(16), submitted_at=datetime.now().replace(microsecond=0),
+                  lines=[OrderLine(item_id, "", 10, 189)])
+    values.update(changes)
+    return repos.orders.add(Order(**values))

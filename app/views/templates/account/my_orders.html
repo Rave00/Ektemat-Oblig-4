@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}My orders · Ekte Mat Online{% endblock %}
+{% block content %}
+<h1>My orders</h1>
+{% if orders %}
+  <div class="table-wrap">
+    <table class="table cart-table orders-table">
+      <thead>
+        <tr><th scope="col">Order</th><th scope="col">Event</th><th scope="col">Event date</th>
+            <th scope="col">Status</th><th scope="col">Payment</th><th scope="col" class="num">Total</th></tr>
+      </thead>
+      <tbody>
+        {% for order in orders %}
+          <tr data-order="{{ order.number }}">
+            <td data-label="Order"><a href="{{ url_for('account.order_page', order_id=order.id) }}"><strong class="num">{{ order.number }}</strong></a></td>
+            <td data-label="Event">{{ events.get(order.event_type, order.event_type) }}</td>
+            <td data-label="Event date" class="num">{{ order.event_date.isoformat() }}</td>
+            <td data-label="Status"><span class="badge status-{{ order.status }}">{{ statuses[order.status] }}</span></td>
+            <td data-label="Payment">{{ payments[order.payment_status] }}</td>
+            <td data-label="Total" class="num">{{ order.total_nok|nok }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <p>You have not sent any booking requests yet.</p>
+  <p><a class="button" href="{{ url_for('shop.index') }}">See the menu</a></p>
+{% endif %}
+{% endblock %}

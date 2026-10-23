@@ -1,4 +1,4 @@
-"""Customer accounts: log in, register, submit an order and see it (plans 0 and 3). My orders and questions: plans 4-5.
+"""Customer accounts: log in, register, submit an order, see it, and My orders (plans 0, 3 and 4). Questions: plan 5.
 
 The routes only translate between HTTP and the model: the rules are in app/models/domain.py and app/models/cart.py.
 """
@@ -102,6 +102,13 @@ def order():
                            values=values, errors=errors, key=key, events=EVENTS, group_rows=GROUP_ROWS,
                            max_guests=MAX_GUESTS, min_date=today, max_date=today + timedelta(days=MAX_DAYS_AHEAD))
     return page, (400 if errors else 200)
+
+
+@bp.route("/orders")
+@login_required
+def my_orders():
+    return render_template("account/my_orders.html", orders=repos().orders.list_for_customer(g.user.id),
+                           events=EVENTS, statuses=STATUS_NAMES, payments=PAYMENT_NAMES)         # C4, plan 4
 
 
 @bp.route("/orders/<int:order_id>")

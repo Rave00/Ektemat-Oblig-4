@@ -1,15 +1,17 @@
-"""Admin panel for Ekte Mat staff: food items and pictures (A1, A2, plan 1). Orders and questions follow in plans 4-5.
+"""Admin panel for Ekte Mat staff: food items and pictures (A1, A2, plan 1), orders (A3, plan 4). Questions: plan 5.
 
-Every route is protected by @admin_required. The routes only translate between HTTP and the model:
-the rules are in app/models/domain.py, the picture handling in app/models/images.py.
+Every route is protected by @admin_required. The routes only translate between HTTP and the model: the rules are in
+app/models/domain.py and app/models/order_status.py, the picture handling in app/models/images.py.
 """
 from dataclasses import replace
+from datetime import datetime
 
 from flask import Blueprint, abort, flash, redirect, render_template, request, session, url_for
 
-from ..models.domain import (ALLERGENS, DIETARY_LABELS, EVENTS, FoodItem, publish_problems,
-                             validate_food_item)
+from ..models.domain import (ALLERGENS, DIETARY_LABELS, EVENTS, PAYMENT_NAMES, STATUS_NAMES, FoodItem, date_filter,
+                             publish_problems, reply_stats, validate_food_item, waiting_too_long)
 from ..models.images import ImageError
+from ..models.order_status import ACTIONS, NEEDS_REASON, StatusError, change_status, check_payment_status, next_statuses
 from . import images, repos
 from .security import admin_required
 
@@ -20,9 +22,13 @@ bp = Blueprint("admin", __name__, url_prefix="/admin")
 @admin_required
 def index():
     items = repos().food_items.list()
+    orders, now = repos().orders.list(), datetime.now()
     return render_template("admin/index.html",
                            item_count=len(items),
-                           published_count=sum(1 for item in items if item.published))
+                           published_count=sum(1 for item in items if item.published),
+                           waiting=sum(1 for order in orders if order.status == "submitted"),
+                           late=sum(1 for order in orders if waiting_too_long(order, now)),
+                           months=reply_stats(orders))
 
 
 # ---- food items (A1) ------------------------------------------------------------------------------------
@@ -162,6 +168,83 @@ def discard_image(item_id):
 
 
 # ---- helpers ---------------------------------------------------------------------------------------------
+# ---- orders (A3, plan 4) ---------------------------------------------------------------------------------
+@bp.route("/orders")
+@admin_required
+def orders():
+    status = request.args.get("status") or None
+    if status is not None and status not in STATUS_NAMES:
+        abort(404)                                        # P4-6: never an unfiltered list for a mistyped filter
+    date_from_text, date_to_text = request.args.get("date_from", ""), request.args.get("date_to", "")
+    date_from, date_to, problem = date_filter(date_from_text, date_to_text)
+    in_range = [] if problem else repos().orders.list(date_from=date_from, date_to=date_to)
+    shown = [] if problem else repos().orders.list(status, date_from, date_to)
+    counts = {code: sum(1 for order in in_range if order.status == code) for code in STATUS_NAMES}
+    now = datetime.now()
+    return render_template("admin/orders.html", orders=shown, counts=counts, total=len(in_range), status=status,
+                           date_from=date_from_text, date_to=date_to_text, problem=problem,
+                           late={order.id for order in shown if waiting_too_long(order, now)},
+                           statuses=STATUS_NAMES, payments=PAYMENT_NAMES, events=EVENTS)
+
+
+@bp.route("/orders/<int:order_id>")
+@admin_required
+def order(order_id):
+    found = _get_order(order_id)
+    return render_template("admin/order.html", order=found, next_statuses=next_statuses(found.status),
+                           actions=ACTIONS, needs_reason=NEEDS_REASON, statuses=STATUS_NAMES, payments=PAYMENT_NAMES,
+                           events=EVENTS, late=waiting_too_long(found, datetime.now()))
+
+
+@bp.route("/orders/<int:order_id>/status", methods=["POST"])
+@admin_required
+def order_status(order_id):
+    found = _get_order(order_id)
+    back = redirect(url_for("admin.order", order_id=order_id))
+    expected = request.form.get("expected_status", "")
+    if expected != found.status:                          # 1. the page was older than the order (P4-4)
+        flash(_changed_meanwhile(found), "error")
+        return back
+    try:                                                  # 2. the state machine decides (P4-1 to P4-3)
+        changed = change_status(found, request.form.get("status", ""), datetime.now().replace(microsecond=0),
+                                request.form.get("reason", ""))
+    except StatusError as error:
+        flash(str(error), "error")
+        return back
+    if repos().orders.update_status(changed, expected_status=expected):     # 3. saved only if still `expected`
+        flash(f"Order {found.number} is now {STATUS_NAMES[changed.status]}.", "success")
+    else:
+        flash(_changed_meanwhile(repos().orders.get(order_id)), "error")
+    return back
+
+
+@bp.route("/orders/<int:order_id>/payment", methods=["POST"])
+@admin_required
+def order_payment(order_id):
+    found = _get_order(order_id)
+    value = request.form.get("payment_status", "")
+    try:
+        check_payment_status(value)
+    except StatusError as error:
+        flash(str(error), "error")
+    else:
+        repos().orders.update_payment_status(found.id, value)
+        flash(f"Payment status of order {found.number}: {PAYMENT_NAMES[value]}.", "success")
+    return redirect(url_for("admin.order", order_id=order_id))
+
+
+def _get_order(order_id):
+    found = repos().orders.get(order_id)
+    if found is None:
+        abort(404)
+    return found
+
+
+def _changed_meanwhile(current):
+    return (f"Order {current.number} was changed in the meantime: it is now {STATUS_NAMES[current.status]}. "
+            "Nothing was saved; check the order before you change it again.")
+
+
 def _get_item(item_id):
     item = repos().food_items.get(item_id)
     if item is None:

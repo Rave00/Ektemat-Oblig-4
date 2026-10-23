@@ -176,3 +176,28 @@ a.button { display: inline-block; text-decoration: none; }
   .group-row { grid-template-columns: minmax(0, 1fr) 5.5em; padding: 10px 0; border-bottom: 1px solid var(--line); }
   .group-row input[name^="group_allergies"], .group-row input[name^="group_diet"] { grid-column: 1 / -1; }
 }
+
+/* ---- my orders and orders in the admin panel (plan 4) ---- */
+.status-submitted { background: #fdf0d5; color: #7a5200; }
+.status-approved, .status-in_preparation { background: #dcebe2; color: var(--success); }
+.status-delivered { background: #e4e9f2; color: #2f4a7a; }
+.status-rejected, .status-cancelled { background: #f6dcda; color: var(--error); }
+tr.late td { background: #fff7e6; }
+.late-note { display: inline-block; margin-left: 6px; font-size: 0.8rem; font-weight: 600; color: #7a5200; }
+.stat-late .stat-value { color: #b35c00; }
+.date-filter { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 4px 0 16px; }
+.date-filter input { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: var(--radius); min-width: 0; }
+.date-filter .button { margin-top: 0; padding: 7px 14px; }
+.status-actions { display: grid; gap: 12px; margin-bottom: 18px; }
+.status-form { display: grid; gap: 6px; }
+.status-form label, .payment-form label { font-weight: 600; }
+.status-form textarea { font: inherit; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius); width: 100%; }
+.status-form .button { margin-top: 0; justify-self: start; }
+.button.danger-button { color: var(--error); border-color: var(--error); }   /* .button.secondary would win otherwise */
+.payment-form { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; border-top: 1px solid var(--line); padding-top: 14px; }
+.payment-form select { font: inherit; padding: 7px 8px; border: 1px solid var(--line); border-radius: var(--radius); }
+.payment-form .button { margin-top: 0; }
+.payment-form label { flex-basis: 100%; }
+.allergy { color: var(--error); font-weight: 600; }
+.narrow-table { max-width: 640px; }
+.orders-table td a { text-decoration: none; }
