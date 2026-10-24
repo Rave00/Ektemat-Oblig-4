@@ -45,3 +45,15 @@ def test_p4_at17_the_seed_has_sample_orders_in_every_status_that_pass_the_rules(
         assert all(line.unit_price_nok == dishes[line.food_item_id].price_nok for line in order.lines)
         assert all(line.quantity >= dishes[line.food_item_id].min_order_qty for line in order.lines)
         assert (order.first_replied_at is None) == (order.status == "submitted")
+
+
+def test_p5_at15_the_seed_has_answered_and_waiting_questions(app, repos, tmp_path):
+    seed(app, uploads=tmp_path / "uploads")
+    orders = repos.orders.list()
+    questions = [q for order in orders for q in order.questions]
+    assert any(q.answer for q in questions) and any(not q.answer for q in questions)
+    for order in orders:
+        for question in order.questions:
+            assert question.customer_id == order.customer_id
+            assert question.asked_at >= order.submitted_at
+            assert not question.answer or question.answered_at >= question.asked_at

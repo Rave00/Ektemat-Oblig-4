@@ -201,5 +201,6 @@ def test_the_dashboard_shows_waiting_orders_and_the_reply_table(admin, repos, us
     arrived = datetime.now() - timedelta(hours=3)
     make_order(repos, kari, soup.id, submitted_at=arrived, status="approved", first_replied_at=arrived + timedelta(hours=1))
     page = text(admin.get("/admin/"))
-    assert "1 waiting for a reply" in page and "1 waiting more than 24 hours" in page
+    assert re.search(r'stat-value">1</span><span class="stat-label">orders waiting for a reply', page)
+    assert re.search(r'stat-value">1</span><span class="stat-label">waiting more than 24 hours', page)
     assert re.search(r"Answered within 24 hours", page)

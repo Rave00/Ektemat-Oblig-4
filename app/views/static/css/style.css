@@ -201,3 +201,16 @@ tr.late td { background: #fff7e6; }
 .allergy { color: var(--error); font-weight: 600; }
 .narrow-table { max-width: 640px; }
 .orders-table td a { text-decoration: none; }
+
+/* ---- questions on an order (plan 5) ---- */
+.questions { margin-top: 24px; }
+.question-list { list-style: none; padding: 0; margin: 0 0 16px; display: grid; gap: 12px; }
+.question { border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 12px; }
+.question-text { white-space: pre-line; margin: 0; overflow-wrap: anywhere; }     /* line breaks kept, as text only */
+.question .small { margin: 4px 0 0; }
+.answer { margin: 8px 0 0 16px; padding: 8px 12px; border-left: 3px solid var(--brand); background: var(--surface); }
+.question-form, .answer-form { max-width: 640px; }
+.question-form textarea, .answer-form textarea { width: 100%; min-width: 0; }
+.question-form .button, .answer-form .button { margin-top: 4px; }
+.question-cell { max-width: 360px; overflow-wrap: anywhere; }
+.small-button { margin-top: 0; padding: 5px 12px; font-size: 0.9rem; }

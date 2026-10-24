@@ -8,7 +8,7 @@ from __future__ import annotations      # type hints as text: the method `list` 
 from abc import ABC, abstractmethod
 from datetime import date
 
-from ..domain import FoodItem, Order, User
+from ..domain import FoodItem, Order, Question, User
 
 
 class EmailAlreadyUsed(Exception):
@@ -97,12 +97,32 @@ class OrderRepository(ABC):
         """Save a new payment status (plan 4, P4-5)."""
 
 
+class QuestionRepository(ABC):
+    @abstractmethod
+    def add(self, question: Question) -> Question:
+        """Store a new question (with an answer only in the seed and tests) and return it as stored."""
+
+    @abstractmethod
+    def get(self, question_id: int) -> Question | None:
+        """The question with its order number, the customer's name and the name of the staff member who answered."""
+
+    @abstractmethod
+    def list(self, show: str = "waiting") -> list[Question]:
+        """Questions for the staff list (plan 5, P5-7): "waiting" (oldest first), "answered" (latest answer first)
+        or "all" (waiting first, then answered)."""
+
+    @abstractmethod
+    def save_answer(self, question: Question) -> bool:
+        """Save the question's answer, but only if it has no answer yet (plan 5, P5-5). False if it already had one."""
+
+
 class Repositories(ABC):
     """All repositories of one storage technology, created once per application."""
 
     users: UserRepository
     food_items: FoodItemRepository
     orders: OrderRepository
+    questions: QuestionRepository
 
     @abstractmethod
     def initialise(self) -> None:

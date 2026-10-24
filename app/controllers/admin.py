@@ -1,4 +1,4 @@
-"""Admin panel for Ekte Mat staff: food items and pictures (A1, A2, plan 1), orders (A3, plan 4). Questions: plan 5.
+"""Admin panel for Ekte Mat staff: food items and pictures (A1, A2, plan 1), orders (A3, plan 4), questions (A4, plan 5).
 
 Every route is protected by @admin_required. The routes only translate between HTTP and the model: the rules are in
 app/models/domain.py and app/models/order_status.py, the picture handling in app/models/images.py.
@@ -6,10 +6,11 @@ app/models/domain.py and app/models/order_status.py, the picture handling in app
 from dataclasses import replace
 from datetime import datetime
 
-from flask import Blueprint, abort, flash, redirect, render_template, request, session, url_for
+from flask import Blueprint, abort, flash, g, redirect, render_template, request, session, url_for
 
-from ..models.domain import (ALLERGENS, DIETARY_LABELS, EVENTS, PAYMENT_NAMES, STATUS_NAMES, FoodItem, date_filter,
-                             publish_problems, reply_stats, validate_food_item, waiting_too_long)
+from ..models.domain import (ALLERGENS, DIETARY_LABELS, EVENTS, MAX_ANSWER, PAYMENT_NAMES, STATUS_NAMES, FoodItem,
+                             QuestionError, answer_question, date_filter, publish_problems, reply_stats,
+                             validate_food_item, waiting_time, waiting_too_long)
 from ..models.images import ImageError
 from ..models.order_status import ACTIONS, NEEDS_REASON, StatusError, change_status, check_payment_status, next_statuses
 from . import images, repos
@@ -28,7 +29,8 @@ def index():
                            published_count=sum(1 for item in items if item.published),
                            waiting=sum(1 for order in orders if order.status == "submitted"),
                            late=sum(1 for order in orders if waiting_too_long(order, now)),
-                           months=reply_stats(orders))
+                           months=reply_stats(orders),
+                           questions_waiting=len(repos().questions.list("waiting")))
 
 
 # ---- food items (A1) ------------------------------------------------------------------------------------
@@ -190,10 +192,14 @@ def orders():
 @bp.route("/orders/<int:order_id>")
 @admin_required
 def order(order_id):
-    found = _get_order(order_id)
+    return _order_page(_get_order(order_id))
+
+
+def _order_page(found, answer_errors=None, answer_texts=None):
     return render_template("admin/order.html", order=found, next_statuses=next_statuses(found.status),
                            actions=ACTIONS, needs_reason=NEEDS_REASON, statuses=STATUS_NAMES, payments=PAYMENT_NAMES,
-                           events=EVENTS, late=waiting_too_long(found, datetime.now()))
+                           events=EVENTS, late=waiting_too_long(found, datetime.now()), max_answer=MAX_ANSWER,
+                           answer_errors=answer_errors or {}, answer_texts=answer_texts or {})
 
 
 @bp.route("/orders/<int:order_id>/status", methods=["POST"])
@@ -231,6 +237,46 @@ def order_payment(order_id):
         repos().orders.update_payment_status(found.id, value)
         flash(f"Payment status of order {found.number}: {PAYMENT_NAMES[value]}.", "success")
     return redirect(url_for("admin.order", order_id=order_id))
+
+
+# ---- questions (A4, plan 5) ---------------------------------------------------------------------------------
+SHOW = {"waiting": "Waiting", "answered": "Answered", "all": "All"}
+
+
+@bp.route("/questions")
+@admin_required
+def questions():
+    show = request.args.get("show", "waiting")
+    if show not in SHOW:
+        abort(404)                                        # P5-7: a mistyped filter never shows a different list
+    shown, everything = repos().questions.list(show), repos().questions.list("all")
+    waiting = sum(1 for question in everything if not question.answered)
+    counts = {"waiting": waiting, "answered": len(everything) - waiting, "all": len(everything)}
+    now = datetime.now()
+    return render_template("admin/questions.html", questions=shown, show=show, shows=SHOW, counts=counts,
+                           waited={q.id: waiting_time(q.asked_at, now) for q in shown if not q.answered})
+
+
+@bp.route("/questions/<int:question_id>/answer", methods=["POST"])
+@admin_required
+def answer(question_id):
+    question = repos().questions.get(question_id)
+    if question is None:
+        abort(404)
+    typed = request.form.get("answer", "")
+    try:
+        answered = answer_question(question, typed, g.user.id, datetime.now().replace(microsecond=0))
+    except QuestionError as error:
+        if question.answered:                             # answered from another tab or by another staff member
+            flash(str(error), "error")
+            return redirect(url_for("admin.order", order_id=question.order_id, _anchor="questions"))
+        return _order_page(_get_order(question.order_id), answer_errors={question.id: str(error)},
+                           answer_texts={question.id: typed}), 400
+    if repos().questions.save_answer(answered):
+        flash(f"Your answer to the question on order {question.order_number} has been saved.", "success")
+    else:
+        flash("This question has already been answered; the first answer is kept.", "error")
+    return redirect(url_for("admin.order", order_id=question.order_id, _anchor="questions"))
 
 
 def _get_order(order_id):

@@ -4,9 +4,9 @@ from datetime import date, datetime
 
 import pytest
 
-from app.models.domain import GuestGroup, Order, OrderLine, User
+from app.models.domain import GuestGroup, Order, OrderLine, Question, User
 from app.models.repositories.base import EmailAlreadyUsed
-from conftest import make_item, make_order
+from conftest import make_item, make_order, make_question
 
 
 def test_user_is_found_by_email_regardless_of_case(repos):
@@ -186,3 +186,38 @@ def test_p4_at18_the_new_columns_are_added_to_an_old_database(tmp_path):
     repos.initialise()
     order = repos.orders.get(1)
     assert (order.guest_count, order.status_reason, order.first_replied_at) == (80, "", None)
+
+
+# ---- questions (plan 5) -------------------------------------------------------------------------------------
+def test_a_question_is_stored_and_loaded_with_its_order(repos, customer):
+    order = make_order(repos, customer.id, repos.food_items.add(make_item()).id)
+    asked = make_question(repos, order, "Can we get it at 11:30?", asked_at=datetime(2026, 10, 24, 9, 0))
+    loaded = repos.questions.get(asked.id)
+    assert (loaded.text, loaded.order_id, loaded.asked_at, loaded.answer) == (
+        "Can we get it at 11:30?", order.id, datetime(2026, 10, 24, 9, 0), "")
+    assert (loaded.order_number, loaded.customer_name) == (order.number, "Kari")
+    assert [q.id for q in repos.orders.get(order.id).questions] == [asked.id]
+    assert [q.id for q in repos.orders.list_for_customer(customer.id)[0].questions] == [asked.id]
+
+
+def test_the_staff_list_of_questions(repos, customer):
+    order = make_order(repos, customer.id, repos.food_items.add(make_item()).id)
+    late = make_question(repos, order, "B", asked_at=datetime(2026, 10, 24, 9, 0))
+    early = make_question(repos, order, "A", asked_at=datetime(2026, 10, 23, 9, 0))
+    done = make_question(repos, order, "C", asked_at=datetime(2026, 10, 20, 9, 0), answer="Yes.",
+                         answered_at=datetime(2026, 10, 21, 9, 0))
+    assert [q.id for q in repos.questions.list("waiting")] == [early.id, late.id]
+    assert [q.id for q in repos.questions.list("answered")] == [done.id]
+    assert [q.id for q in repos.questions.list("all")] == [early.id, late.id, done.id]
+
+
+def test_p5_at14_only_the_first_answer_is_saved(repos, customer):
+    order = make_order(repos, customer.id, repos.food_items.add(make_item()).id)
+    question = make_question(repos, order)
+    first = Question(**{**question.__dict__, "answer": "First.", "answered_at": datetime(2026, 10, 24, 10, 0),
+                        "answered_by": customer.id})
+    second = Question(**{**question.__dict__, "answer": "Second.", "answered_at": datetime(2026, 10, 24, 10, 1),
+                         "answered_by": customer.id})
+    assert repos.questions.save_answer(first) is True
+    assert repos.questions.save_answer(second) is False
+    assert repos.questions.get(question.id).answer == "First."

@@ -2,6 +2,7 @@ import sqlite3
 from datetime import date, datetime
 
 from ...domain import GuestGroup, Order, OrderLine
+from .questions import SELECT as QUESTIONS, to_question
 from ..base import OrderRepository
 
 # Every order is loaded with its customer's name and e-mail address (for the staff pages, plan 4).
@@ -79,10 +80,10 @@ class SqliteOrderRepository(OrderRepository):
 
     @staticmethod
     def _load(conn, query, values):
-        """Orders from `query`, each with its lines (and the dishes' names) and guest groups: three queries in all."""
+        """Orders from `query`, each with its lines (and the dishes' names), guest groups and questions: four queries."""
         rows = conn.execute(query, values).fetchall()
         ids = [row["id"] for row in rows]
-        lines, groups = {i: [] for i in ids}, {i: [] for i in ids}
+        lines, groups, questions = {i: [] for i in ids}, {i: [] for i in ids}, {i: [] for i in ids}
         if ids:
             marks = ", ".join("?" * len(ids))
             for r in conn.execute("SELECT l.*, f.name FROM order_lines l JOIN food_items f ON f.id = l.food_item_id"
@@ -93,6 +94,8 @@ class SqliteOrderRepository(OrderRepository):
                 groups[r["order_id"]].append(GuestGroup(id=r["id"], description=r["description"], size=r["size"],
                                                         allergy_notes=r["allergy_notes"] or "",
                                                         diet_notes=r["diet_notes"] or ""))
+            for r in conn.execute(QUESTIONS + f" WHERE q.order_id IN ({marks}) ORDER BY q.asked_at, q.id", ids):
+                questions[r["order_id"]].append(to_question(r))
         return [Order(id=row["id"], customer_id=row["customer_id"], event_type=row["event_type"],
                       event_date=date.fromisoformat(row["event_date"]), guest_count=row["guest_count"],
                       delivery_street=row["delivery_street"], delivery_postcode=row["delivery_postcode"],
@@ -101,5 +104,5 @@ class SqliteOrderRepository(OrderRepository):
                       status_reason=row["status_reason"] or "",
                       first_replied_at=datetime.fromisoformat(row["first_replied_at"]) if row["first_replied_at"] else None,
                       customer_name=row["customer_name"], customer_email=row["customer_email"],
-                      lines=lines[row["id"]], groups=groups[row["id"]])
+                      lines=lines[row["id"]], groups=groups[row["id"]], questions=questions[row["id"]])
                 for row in rows]

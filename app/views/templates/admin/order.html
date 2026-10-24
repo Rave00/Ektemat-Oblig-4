@@ -90,4 +90,31 @@
   </table>
 </div>
 <p class="muted small">Prices as they were when the customer sent the request.</p>
+
+<section class="panel questions" id="questions" aria-labelledby="questions-heading">
+  <h2 id="questions-heading">Questions from the customer</h2>
+  {% for q in order.questions %}
+    <article class="question" id="question-{{ q.id }}">
+      <p class="question-text">{{ q.text }}</p>
+      <p class="small muted">Asked {{ q.asked_at.strftime('%Y-%m-%d %H:%M') }}</p>
+      {% if q.answered %}
+        <div class="answer">
+          <p class="question-text">{{ q.answer }}</p>
+          <p class="small muted">Answered by {{ q.answered_by_name or 'staff' }}, {{ q.answered_at.strftime('%Y-%m-%d %H:%M') }}</p>
+        </div>
+      {% else %}
+        <form method="post" action="{{ url_for('admin.answer', question_id=q.id) }}" class="form answer-form" novalidate>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <label for="answer-{{ q.id }}">Your answer <span class="muted small">(the customer sees it as from Ekte Mat)</span></label>
+          <textarea id="answer-{{ q.id }}" name="answer" rows="3" maxlength="{{ max_answer }}" required
+                    {% if answer_errors.get(q.id) %}aria-invalid="true" aria-describedby="answer-{{ q.id }}-error"{% endif %}>{{ answer_texts.get(q.id, '') }}</textarea>
+          {% if answer_errors.get(q.id) %}<p class="field-error" id="answer-{{ q.id }}-error">{{ answer_errors[q.id] }}</p>{% endif %}
+          <button type="submit" class="button">Send answer</button>
+        </form>
+      {% endif %}
+    </article>
+  {% else %}
+    <p class="muted">No questions about this order.</p>
+  {% endfor %}
+</section>
 {% endblock %}

@@ -1,4 +1,4 @@
-"""Customer accounts: log in, register, submit an order, see it, and My orders (plans 0, 3 and 4). Questions: plan 5.
+"""Customer accounts: log in, register, submit an order, see it, My orders and questions (plans 0 and 3-5).
 
 The routes only translate between HTTP and the model: the rules are in app/models/domain.py and app/models/cart.py.
 """
@@ -10,8 +10,8 @@ from flask import Blueprint, abort, flash, g, redirect, render_template, request
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from ..models.cart import Cart, estimated_total_nok, order_lines_from
-from ..models.domain import (EVENTS, GROUP_ROWS, MAX_DAYS_AHEAD, MAX_GUESTS, PAYMENT_NAMES, STATUS_NAMES, User,
-                             order_from_form, validate_registration)
+from ..models.domain import (EVENTS, GROUP_ROWS, MAX_DAYS_AHEAD, MAX_GUESTS, MAX_QUESTION, PAYMENT_NAMES, STATUS_NAMES,
+                             Question, QuestionError, User, order_from_form, validate_question, validate_registration)
 from ..models.repositories.base import EmailAlreadyUsed
 from . import repos
 from .security import log_in, log_out, login_required, safe_next
@@ -114,11 +114,36 @@ def my_orders():
 @bp.route("/orders/<int:order_id>")
 @login_required
 def order_page(order_id):
+    return _order_page(_own_order(order_id))
+
+
+@bp.route("/orders/<int:order_id>/questions", methods=["POST"])
+@login_required
+def ask(order_id):
+    if g.user.is_admin:
+        abort(403, description="Staff accounts cannot ask questions. Answer them in the admin panel.")   # P5-4
+    found = _own_order(order_id)
+    try:
+        text = validate_question(request.form.get("text", ""))
+    except QuestionError as error:
+        return _order_page(found, question=request.form.get("text", ""), question_error=str(error)), 400
+    repos().questions.add(Question(order_id=found.id, customer_id=g.user.id, text=text,
+                                   asked_at=datetime.now().replace(microsecond=0)))
+    flash("Your question has been sent. Ekte Mat's answer will appear here.", "success")
+    return redirect(url_for("account.order_page", order_id=found.id, _anchor="questions"))
+
+
+def _own_order(order_id):
     found = repos().orders.get(order_id)
     if found is None or found.customer_id != g.user.id:
-        abort(404)                                           # P3-9: never confirm that someone else's order exists
+        abort(404)                                           # P3-9, P5-4: never confirm that someone else's order exists
+    return found
+
+
+def _order_page(found, question="", question_error=""):
     return render_template("account/order.html", order=found, events=EVENTS, statuses=STATUS_NAMES,
-                           payments=PAYMENT_NAMES)
+                           payments=PAYMENT_NAMES, question=question, question_error=question_error,
+                           max_question=MAX_QUESTION)
 
 
 def _cart_lines():
