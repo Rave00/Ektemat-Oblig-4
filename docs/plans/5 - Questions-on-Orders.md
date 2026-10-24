@@ -1,6 +1,6 @@
 # Plan 5: Questions on an order
 
-- **Status:** Approved by User1 on 2026-10-24 (no changes requested). Not built yet.
+- **Status:** Approved by User1 on 2026-10-24 (no changes requested). Built in pull request #18, awaiting User1's review.
 - **Date:** 2026-10-24
 - **Requirements:** C5 ("Ask a question about a specific order and read Ekte Mat's answer") and A4 ("Read and answer
   customers' questions about their orders"). Lab backlog: US-21 (the coordinator reads and answers questions inside
@@ -119,10 +119,35 @@
 
 ## 8. Done when
 
-- [ ] Acceptance tests 1-15 pass, plus all earlier tests.
-- [ ] Every rule test has been seen to fail when its rule is broken on purpose (as in plans 1-4).
-- [ ] Works from a fresh clone with the README commands, and on User1's Windows PC.
-- [ ] Checked in a browser at 1200 px and 390 px (page width measured on every page); screenshots of the questions
+- [x] Acceptance tests 1-15 pass, plus all earlier tests (305 tests).
+- [x] Every rule test has been seen to fail when its rule is broken on purpose (as in plans 1-4).
+- [x] Works from a fresh clone with the README commands.
+- [ ] Works on User1's Windows PC. **Still open: for User1.**
+- [x] Checked in a browser at 1200 px and 390 px (page width measured on every page); screenshots of the questions
       on the customer's order page, the admin questions list and the staff order page saved in `docs/screenshots/`.
-- [ ] `docs/report-notes.md` updated, and this plan gets a "What changed compared with the plan" section.
+- [x] `docs/report-notes.md` updated, and this plan gets a "What changed compared with the plan" section (below).
 - [ ] After merging: the tag `oblig4` on `main` (User1 decides when).
+
+## 9. What changed compared with the plan (pull request #18)
+
+- **Built as planned:** P5-1 to P5-10, with no database change, and acceptance tests 1-15: `test_p5_at01` to
+  `test_p5_at13` in `test_questions.py`; 10 is `test_at10` in `test_admin_items.py` (it now fills in question ids);
+  14 in `test_repositories.py`, 15 in `test_shop_and_seed.py`.
+- **Small additions found while building:**
+  - **The dashboard no longer repeats each number** ("2" above "2 waiting for a reply"). The label carried the number
+    since plan 4 so that a test could find it; the browser check made it visible. The tests now read the number next
+    to the label, and plan 4's dashboard screenshot was taken again.
+  - **"Less than a minute"** instead of "0 minutes" for a question asked just now.
+  - **An answer that breaks the rules is shown again with the text kept**, on the staff order page, not only as a
+    message: a 2001-character answer would otherwise be lost (the customer's question form works the same way).
+  - Line breaks in questions and answers are kept with CSS (`white-space: pre-line`), never by writing HTML, so the
+    text stays text (acceptance test 5).
+- **Errors caught before merging:** both in my tests, not the code. The every-admin-route test first compared an order
+  with itself, which is always true; it now checks the status fields. Test 5 first used two fixtures that share one
+  browser session, so the "customer" would really have posted as the admin.
+- **Verification:** 305 tests, also from a fresh clone with only the README commands. 15 rules were broken on purpose,
+  one at a time, and each was caught; "answering is open to everyone" was caught only by the every-admin-route test,
+  because it fills in question ids. Browser check at 1200 px and 390 px for customer and staff: an empty question, a
+  2001-character answer (refused, text kept), an answer from an old tab (refused, first answer kept), and the
+  customer reading the answer. No page wider than the screen, no server errors.
+- **Still open:** the run on User1's Windows PC (Done when, above), then the tag `oblig4`.
