@@ -1,6 +1,6 @@
 # Plan 5: Questions on an order
 
-- **Status:** Draft, awaiting User1's approval.
+- **Status:** Approved by User1 on 2026-10-24 (no changes requested). Not built yet.
 - **Date:** 2026-10-24
 - **Requirements:** C5 ("Ask a question about a specific order and read Ekte Mat's answer") and A4 ("Read and answer
   customers' questions about their orders"). Lab backlog: US-21 (the coordinator reads and answers questions inside
