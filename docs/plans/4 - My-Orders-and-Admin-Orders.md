@@ -1,6 +1,7 @@
 # Plan 4: My orders, and orders in the admin panel
 
-- **Status:** Approved by User1 on 2026-10-23 (no changes requested). Built in pull request #16, awaiting User1's review.
+- **Status:** Done. Approved by User1 on 2026-10-23 (no changes requested); built in pull request #16, merged by
+  User1 on 2026-10-23.
 - **Date:** 2026-10-23
 - **Requirements:** C4 ("The customer's own orders with their current status ... and payment status") and A3 ("A list
   of all customer orders that can be filtered by status and event date, and a page per order to manage it: order
@@ -154,7 +155,7 @@ Every status and payment change is a POST form with the CSRF token (team rule).
 - [x] Acceptance tests 1-18 pass, plus all earlier tests (282 tests).
 - [x] Every rule test has been seen to fail when its rule is broken on purpose (as in plans 1-3).
 - [x] Works from a fresh clone with the README commands.
-- [ ] Works on User1's Windows PC. **Still open: for User1.**
+- [x] Works on User1's Windows PC: 282 passed (2026-10-23).
 - [x] Checked in a browser at 1200 px and 390 px (page width measured on every page); screenshots of My orders, the
       order list (with a filter) and the staff order page saved in `docs/screenshots/`.
 - [x] `docs/report-notes.md` updated, and this plan gets a "What changed compared with the plan" section (below).
@@ -186,4 +187,4 @@ Every status and payment change is a POST form with the CSRF token (team rule).
   test, because it now fills in order ids. Browser check at 1200 px and 390 px for customer and staff, including an
   old tab trying to reject an order that was already approved. The database left by plan 3's browser check was
   started with the new code: both columns were added and its order was kept (P4-10). No server errors.
-- **Still open:** the run on User1's Windows PC (Done when, above).
+- **Windows:** User1 ran the tests on Windows on 2026-10-23: 282 passed.
