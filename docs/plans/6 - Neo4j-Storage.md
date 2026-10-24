@@ -5,7 +5,7 @@
 - **Requirements:** Oblig 5: all application data is stored in Neo4j. The assignment text is not in the repository yet;
   this plan is checked against it as soon as it is published (section 7).
 - **Builds on:** plan 0 (D2, D3, D4: repositories behind `base.py`, one composition root, architecture test) and every
-  feature plan before it. Built **after** plans 2-5 and the `oblig4` tag, so that the Oblig 4 version stays on SQLite.
+  feature plan before it. Built **after** plans 2-5 and the `Obligatorisk-4` tag, so that the Oblig 4 version stays on SQLite.
 
 ## 1. What is different afterwards
 

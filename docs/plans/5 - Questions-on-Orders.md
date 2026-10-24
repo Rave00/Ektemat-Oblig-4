@@ -10,7 +10,7 @@
   the IT landscape, "No customer database; customer details only in e-mail threads".
 - **Builds on:** plan 0 (the `questions` table and the `Question` class it reserved), plan 3 (the customer's order
   page, private to its customer), plan 4 (My orders, the staff order page, "save only if it is still ..." from P4-4).
-- **After this plan:** all of C1-C5 and A1-A4 exist, so the version to assess gets the tag `oblig4` (plan 0,
+- **After this plan:** all of C1-C5 and A1-A4 exist, so the version to assess gets the tag `Obligatorisk-4` (plan 0,
   section 7).
 
 ## 1. What changes afterwards
@@ -127,7 +127,8 @@
 - [x] Checked in a browser at 1200 px and 390 px (page width measured on every page); screenshots of the questions
       on the customer's order page, the admin questions list and the staff order page saved in `docs/screenshots/`.
 - [x] `docs/report-notes.md` updated, and this plan gets a "What changed compared with the plan" section (below).
-- [ ] After merging: the tag `oblig4` on `main` (User1 decides when).
+- [x] After merging: the tag `Obligatorisk-4` on `main`, created by User1 as the GitHub release "Obligatorisk 4 -
+      Ekte Mat" on 2026-10-24, on the merge of pull request #19 (commit `14caa3a`).
 
 ## 9. What changed compared with the plan (pull request #18)
 

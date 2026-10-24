@@ -114,7 +114,7 @@ planned for plan 3. Log in and log out (decision D6) therefore move into plan 0;
 3. **Review:** User1 reviews the diff on GitHub ("Compare & pull request") and merges it.
 4. **After merging**, the plan gets a short "What changed compared with the plan" section.
 5. **Never commit** `.env`, API keys or real personal data; only synthetic data.
-6. The finished version is tagged `oblig4`.
+6. The finished version is tagged `oblig4`. (Created on 2026-10-24 as `Obligatorisk-4`, a GitHub release.)
 
 ## 8. Definition of Done (per feature)
 
