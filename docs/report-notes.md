@@ -10,7 +10,7 @@ No names of group members in this file (team rule in `CLAUDE.md`); they go on th
 |---|---|
 | Group members | Written on the PDF only. |
 | GitHub repository | Link written on the PDF. |
-| Version to assess | Tag `oblig4`, on `main` once plan 5 is merged (all of C1-C5 and A1-A4 are then built). |
+| Version to assess | Tag `oblig4` on `main` after pull request #19 (all of C1-C5 and A1-A4 built; 305 tests). |
 | Neo4j included? | No, unless plan 6 is built before the tag (Oblig 4: then the submission also counts as Oblig 5). |
 
 ## 2. Features and screenshots

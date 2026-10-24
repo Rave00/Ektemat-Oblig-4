@@ -60,9 +60,11 @@ app/
   controllers/     Flask blueprints: shop, account, admin (+ security helpers)
   views/           Jinja2 templates and static files
 tests/             pytest, including architecture rules
-docs/plans/        the agreed plan for every larger feature
+docs/plans/        the agreed plan for every larger feature, with "what changed" after building
 docs/design/       diagrams from the analysis (lab exercise)
 docs/requirements/ product backlog (user stories) from the lab exercise
+docs/screenshots/  screenshots of every screen, for the report
+docs/report-notes.md  material for the Oblig 4 report, collected while building
 seed.py            synthetic sample data
 ```
 
