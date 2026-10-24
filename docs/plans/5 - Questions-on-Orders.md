@@ -1,6 +1,7 @@
 # Plan 5: Questions on an order
 
-- **Status:** Approved by User1 on 2026-10-24 (no changes requested). Built in pull request #18, awaiting User1's review.
+- **Status:** Done. Approved by User1 on 2026-10-24 (no changes requested); built in pull request #18, merged by
+  User1 on 2026-10-24.
 - **Date:** 2026-10-24
 - **Requirements:** C5 ("Ask a question about a specific order and read Ekte Mat's answer") and A4 ("Read and answer
   customers' questions about their orders"). Lab backlog: US-21 (the coordinator reads and answers questions inside
@@ -122,7 +123,7 @@
 - [x] Acceptance tests 1-15 pass, plus all earlier tests (305 tests).
 - [x] Every rule test has been seen to fail when its rule is broken on purpose (as in plans 1-4).
 - [x] Works from a fresh clone with the README commands.
-- [ ] Works on User1's Windows PC. **Still open: for User1.**
+- [x] Works on User1's Windows PC: 305 passed (2026-10-24).
 - [x] Checked in a browser at 1200 px and 390 px (page width measured on every page); screenshots of the questions
       on the customer's order page, the admin questions list and the staff order page saved in `docs/screenshots/`.
 - [x] `docs/report-notes.md` updated, and this plan gets a "What changed compared with the plan" section (below).
@@ -150,4 +151,7 @@
   because it fills in question ids. Browser check at 1200 px and 390 px for customer and staff: an empty question, a
   2001-character answer (refused, text kept), an answer from an old tab (refused, first answer kept), and the
   customer reading the answer. No page wider than the screen, no server errors.
-- **Still open:** the run on User1's Windows PC (Done when, above), then the tag `oblig4`.
+- **Windows:** User1 ran the tests on Windows on 2026-10-24: 305 passed.
+- **Final check before the tag (2026-10-24):** a fresh clone of `main` after pull request #18 installs, seeds and
+  passes all 305 tests; every page answers for a visitor, a customer and the admin, with no server errors; a
+  customer gets 404 for another customer's order; no secrets, stray files or names in the repository.
