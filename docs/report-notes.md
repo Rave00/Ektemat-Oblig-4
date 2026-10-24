@@ -10,7 +10,7 @@ No names of group members in this file (team rule in `CLAUDE.md`); they go on th
 |---|---|
 | Group members | Written on the PDF only. |
 | GitHub repository | Link written on the PDF. |
-| Version to assess | Tag `oblig4` (created when plans 2-5 are merged). |
+| Version to assess | Tag `oblig4`, on `main` once plan 5 is merged (all of C1-C5 and A1-A4 are then built). |
 | Neo4j included? | No, unless plan 6 is built before the tag (Oblig 4: then the submission also counts as Oblig 5). |
 
 ## 2. Features and screenshots
@@ -24,10 +24,10 @@ No names of group members in this file (team rule in `CLAUDE.md`); they go on th
 | Register and order (C3) | Register or log in from the cart, then send event, date, guests, address and guest groups; the order page is the receipt. | 3 | `plan3-register.png`, `plan3-order-form.png`, `plan3-order-form-errors.png`, `plan3-order-page.png`, `plan3-order-form-phone.png`, `plan3-order-page-phone.png` | Done |
 | My orders (C4) | The customer's orders with order status, payment status and total; a rejection shows its reason. | 4 | `plan4-my-orders.png`, `plan4-my-orders-phone.png` | Done |
 | Orders (A3) | All orders, filtered by status and event date, late replies highlighted; a page per order with only the allowed status changes, and the payment status. | 4 | `plan4-order-list.png`, `plan4-order-list-filtered.png`, `plan4-order-page-admin.png`, `plan4-order-page-admin-phone.png`, `plan4-dashboard.png` | Done |
-| Questions (C5, A4) | Questions about an order, and Ekte Mat's answers. | 5 | | Planned |
+| Questions (C5, A4) | Customers ask about an order on its page and read the answer; staff see the longest-waiting question first and answer once. | 5 | `plan5-order-questions.png`, `plan5-order-questions-phone.png`, `plan5-admin-questions.png`, `plan5-admin-questions-phone.png`, `plan5-admin-order-questions.png` | Done |
 
-Screens the report must show (section 5.2): menu (done), cart (done), order form (done), my orders (done),
-questions (plan 5), food item (done), image (done), order list (done), order page (done).
+Screens the report must show (section 5.2): all nine are done: menu, cart, order form, my orders, questions, food
+item, image, order list and order page.
 
 ## 3. Software design: what was used and how
 
@@ -66,6 +66,8 @@ questions (plan 5), food item (done), image (done), order list (done), order pag
   staff page cannot offer a jump such as Submitted → Delivered (the old data had a status typo, V3).
 - **US-19 → plan 4:** "a reason is required and sent to the customer" led to a reason field and to showing it on
   the customer's order page, since there is no e-mail yet.
+- **US-21 → plan 5:** "the whole conversation is kept with the order" put the questions on the order pages, not on a
+  page of their own; the `questions` table designed in plan 0 fitted as it was, so plan 5 needed no database change.
 - **NFR-19 → plan 4:** the lab analysis showed reply times could not be measured ("only as a manually typed
   number"); storing the first status change makes the 24-hour target checkable per month.
 
@@ -85,8 +87,11 @@ questions (plan 5), food item (done), image (done), order list (done), order pag
   The browser check found the order form too wide for a phone, and screenshots with American dates.
 - Plan 4: a Python trap (a method called `list` hid the built-in `list`) stopped every test; the browser check found
   a status form that sent no status when submitted without its button, and red buttons shown in green.
+- Plan 5: two of my tests were wrong (one compared an order with itself, one let two fixtures share a session); the
+  browser check showed that plan 4's dashboard repeated every number.
 - Plan 4's mutation check showed why one small test change mattered: "the payment form is open to everyone" was
-  caught only because the every-admin-route test was extended to the new order pages.
+  caught only because the every-admin-route test was extended to the new order pages. The same happened in plan 5
+  for "answering questions is open to everyone".
 
 **Decisions made by the team, not the agent:** SQLite for Oblig 4 and Neo4j later; every plan approved before code
 (plan 0 with a file-name change; plans 1-3 with no changes, P2-5 "fine for now"); guest groups, strict event
@@ -94,4 +99,4 @@ matching, double-click protection and customer-only ordering confirmed in plan 3
 needed.
 
 **Numbers:** tests after each plan: 22 (plan 0), 71 (plan 1 and the privacy test), 147 (plan 2), 218 (plan 3),
-282 (plan 4).
+282 (plan 4), 305 (plan 5).

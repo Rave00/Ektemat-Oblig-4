@@ -26,4 +26,9 @@ Norwegian settings, so date fields look as they do for Ekte Mat's customers (22.
 | `plan4-order-list-filtered.png` | Admin: orders filtered by event date | A3 |
 | `plan4-order-page-admin.png` | Admin: order page with the allowed status changes and the payment status | A3 |
 | `plan4-order-page-admin-phone.png` | Admin: order page at phone width (390 px), after approving | A3 |
-| `plan4-dashboard.png` | Admin: dashboard with waiting orders and the share answered within 24 hours | A3, NFR-19 |
+| `plan4-dashboard.png` | Admin: dashboard with waiting orders and questions, and the share answered within 24 hours (retaken in plan 5) | A3, A4, NFR-19 |
+| `plan5-order-questions.png` | Customer: questions on the order page, one answered, two waiting, and the form | C5 |
+| `plan5-order-questions-phone.png` | Customer: the same at phone width (390 px), after the answer | C5 |
+| `plan5-admin-questions.png` | Admin: questions waiting for an answer, the longest-waiting first | A4 |
+| `plan5-admin-questions-phone.png` | Admin: all questions at phone width (390 px) | A4 |
+| `plan5-admin-order-questions.png` | Admin: questions on the staff order page, with the new answer saved | A4 |

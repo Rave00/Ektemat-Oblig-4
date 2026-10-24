@@ -7,7 +7,7 @@ from PIL import Image
 from werkzeug.security import generate_password_hash
 
 from app import create_app
-from app.models.domain import FoodItem, Order, OrderLine, User
+from app.models.domain import FoodItem, Order, OrderLine, Question, User
 
 
 @pytest.fixture
@@ -71,3 +71,11 @@ def make_order(repos, customer_id, item_id, **changes):
                   lines=[OrderLine(item_id, "", 10, 189)])
     values.update(changes)
     return repos.orders.add(Order(**values))
+
+
+def make_question(repos, order, text="Can the food be delivered at 11:30?", **changes):
+    """Store a question straight through the repository (plan 5 tests)."""
+    values = dict(order_id=order.id, customer_id=order.customer_id, text=text,
+                  asked_at=datetime.now().replace(microsecond=0))
+    values.update(changes)
+    return repos.questions.add(Question(**values))

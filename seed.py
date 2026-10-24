@@ -1,5 +1,5 @@
-"""Fill the database with synthetic sample data: food items (with placeholder pictures), one admin, test customers
-and sample orders.
+"""Fill the database with synthetic sample data: food items (with placeholder pictures), one admin, test customers,
+sample orders and sample questions.
 
 Run:  python seed.py
 WARNING: deletes all existing data first. Synthetic data only; the passwords are for local development.
@@ -16,7 +16,7 @@ from PIL import Image, ImageDraw, ImageFont
 from werkzeug.security import generate_password_hash
 
 from app import create_app
-from app.models.domain import FoodItem, GuestGroup, Order, OrderLine, User
+from app.models.domain import FoodItem, GuestGroup, Order, OrderLine, Question, User
 
 ADMIN = ("admin@ektemat.example", "Ekte Mat admin", "admin-dev-1")
 CUSTOMERS = [("kunde1@example.com", "Test Customer One", "customer-dev-1"),
@@ -73,17 +73,43 @@ ORDERS = [
 ]
 
 
+# Sample questions (plan 5, P5-10): (sample order number in ORDERS, asked: hours ago, question,
+#  answered: hours after asking or None, answer)
+QUESTIONS = [
+    (0, 20, "Can the food be delivered at 11:30 instead of 11:00?", None, ""),
+    (2, 100, "Is the dessert in the served dinner free of nuts? Three guests have a nut allergy.", 2,
+     "Yes. The dessert is made without nuts, and the kitchen keeps the portions for the nut allergy group apart."),
+    (2, 30, "Can we bring our own wedding cake?", None, ""),
+    (3, 3, "Can we have two extra portions for the speakers?", None, ""),
+    (5, 40, "Do you have another date available in December?", 2,
+     "We still have room on 12 and 13 December. Send a new booking request for one of those dates."),
+]
+
+
 def sample_orders(repos, customers, dishes, now=None):
+    """Store the sample orders and return them in the order of ORDERS."""
     now = now or datetime.now().replace(microsecond=0)
+    stored = []
     for who, status, payment, sent_ago, replied_after, days, event, guests, address, lines, groups, reason in ORDERS:
         sent = now - timedelta(hours=sent_ago)
-        repos.orders.add(Order(
+        stored.append(repos.orders.add(Order(
             customer_id=customers[who].id, event_type=event, event_date=date.today() + timedelta(days=days),
             guest_count=guests, delivery_street=address[0], delivery_postcode=address[1], delivery_city=address[2],
             submission_key=secrets.token_hex(16), submitted_at=sent, status=status, payment_status=payment,
             status_reason=reason, first_replied_at=sent + timedelta(hours=replied_after) if replied_after else None,
             lines=[OrderLine(dishes[name].id, name, portions, dishes[name].price_nok) for name, portions in lines],
-            groups=[GuestGroup(*group) for group in groups]))
+            groups=[GuestGroup(*group) for group in groups])))
+    return stored
+
+
+def sample_questions(repos, orders, staff, now=None):
+    now = now or datetime.now().replace(microsecond=0)
+    for number, asked_ago, text, answered_after, answer in QUESTIONS:
+        asked = now - timedelta(hours=asked_ago)
+        repos.questions.add(Question(
+            order_id=orders[number].id, customer_id=orders[number].customer_id, text=text, asked_at=asked,
+            answer=answer, answered_at=asked + timedelta(hours=answered_after) if answered_after else None,
+            answered_by=staff.id if answered_after else None))
 
 
 def placeholder_image(folder, number, name, colour):
@@ -123,7 +149,7 @@ def seed(app, uploads=None):
         old.unlink()
 
     email, name, password = ADMIN
-    repos.users.add(User(email=email, name=name, role="admin", password_hash=generate_password_hash(password)))
+    admin = repos.users.add(User(email=email, name=name, role="admin", password_hash=generate_password_hash(password)))
     customers = [repos.users.add(User(email=email, name=name, role="customer",
                                       password_hash=generate_password_hash(password)))
                  for email, name, password in CUSTOMERS]
@@ -133,14 +159,14 @@ def seed(app, uploads=None):
             name=name, description=description, price_nok=price, min_order_qty=minimum,
             events=events, allergens=allergens, labels=labels, published=published,
             image_path=placeholder_image(uploads, number, name, colour)))
-    sample_orders(repos, customers, dishes)
+    sample_questions(repos, sample_orders(repos, customers, dishes), admin)
 
 
 if __name__ == "__main__":
     app = create_app()
     seed(app)
-    print(f"Seeded {len(FOOD)} food items, {len(ORDERS)} sample orders, 1 admin and {len(CUSTOMERS)} test customers"
-          f" into {app.config['DATABASE']}")
+    print(f"Seeded {len(FOOD)} food items, {len(ORDERS)} sample orders, {len(QUESTIONS)} questions, 1 admin and"
+          f" {len(CUSTOMERS)} test customers into {app.config['DATABASE']}")
     print("Log in (development only):")
     for email, _, password in [ADMIN, *CUSTOMERS]:
         print(f"  {email:28} {password}")

@@ -3,13 +3,15 @@
 {% block content %}
 <h1>Admin panel</h1>
 <div class="stats">
-  <div class="stat"><span class="stat-value">{{ waiting }}</span><span class="stat-label">{{ waiting }} waiting for a reply</span></div>
-  <div class="stat{% if late %} stat-late{% endif %}"><span class="stat-value">{{ late }}</span><span class="stat-label">{{ late }} waiting more than 24 hours</span></div>
+  <div class="stat"><span class="stat-value">{{ waiting }}</span><span class="stat-label">orders waiting for a reply</span></div>
+  <div class="stat{% if late %} stat-late{% endif %}"><span class="stat-value">{{ late }}</span><span class="stat-label">waiting more than 24 hours</span></div>
+  <div class="stat"><span class="stat-value">{{ questions_waiting }}</span><span class="stat-label">{{ 'question' if questions_waiting == 1 else 'questions' }} waiting for an answer</span></div>
   <div class="stat"><span class="stat-value">{{ item_count }}</span><span class="stat-label">food items</span></div>
   <div class="stat"><span class="stat-value">{{ published_count }}</span><span class="stat-label">published</span></div>
 </div>
 <ul class="admin-links">
   <li><a href="{{ url_for('admin.orders') }}">Orders</a>{% if waiting %} · <a href="{{ url_for('admin.orders', status='submitted') }}">the {{ waiting }} waiting for a reply</a>{% endif %}</li>
+  <li><a href="{{ url_for('admin.questions') }}">Questions</a>{% if questions_waiting %} · {{ questions_waiting }} waiting for an answer{% endif %}</li>
   <li><a href="{{ url_for('admin.items') }}">Food items and pictures</a></li>
 </ul>
 
@@ -32,5 +34,4 @@
 {% else %}
   <p class="muted">No orders yet.</p>
 {% endif %}
-<p class="muted">Questions (plan 5) are added here.</p>
 {% endblock %}

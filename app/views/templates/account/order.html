@@ -64,6 +64,39 @@
   </table>
 </div>
 <p class="muted small">Prices as they were when the request was sent. Ekte Mat confirms the final price.</p>
+
+<section class="panel questions" id="questions" aria-labelledby="questions-heading">
+  <h2 id="questions-heading">Questions</h2>
+  {% if order.questions %}
+    <ol class="question-list">
+      {% for q in order.questions %}
+        <li class="question" data-question="{{ q.id }}">
+          <p class="question-text">{{ q.text }}</p>
+          <p class="small muted">Asked {{ q.asked_at.strftime('%Y-%m-%d %H:%M') }}</p>
+          {% if q.answered %}
+            <div class="answer">
+              <p class="question-text">{{ q.answer }}</p>
+              <p class="small muted">Answered by Ekte Mat, {{ q.answered_at.strftime('%Y-%m-%d %H:%M') }}</p>
+            </div>
+          {% else %}
+            <p><span class="badge status-submitted">Waiting for an answer</span></p>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ol>
+  {% else %}
+    <p class="muted">No questions about this order yet.</p>
+  {% endif %}
+  <form method="post" action="{{ url_for('account.ask', order_id=order.id) }}" class="form question-form" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="question-text">Ask a question about this order</label>
+    <textarea id="question-text" name="text" rows="3" maxlength="{{ max_question }}" required
+              {% if question_error %}aria-invalid="true" aria-describedby="question-error"{% endif %}>{{ question }}</textarea>
+    {% if question_error %}<p class="field-error" id="question-error">{{ question_error }}</p>{% endif %}
+    <p class="small muted">Do not write guest names. Ekte Mat answers here, on this page.</p>
+    <button type="submit" class="button">Send question</button>
+  </form>
+</section>
 <p class="button-row"><a class="button secondary" href="{{ url_for('account.my_orders') }}">All my orders</a>
   <a href="{{ url_for('shop.index') }}">Back to the menu</a></p>
 {% endblock %}

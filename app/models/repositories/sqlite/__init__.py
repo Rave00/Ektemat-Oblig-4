@@ -6,6 +6,7 @@ from pathlib import Path
 from ..base import Repositories
 from .food_items import SqliteFoodItemRepository
 from .orders import SqliteOrderRepository
+from .questions import SqliteQuestionRepository
 from .users import SqliteUserRepository
 
 SCHEMA = Path(__file__).with_name("schema.sql")
@@ -43,6 +44,7 @@ class SqliteRepositories(Repositories):
         self.users = SqliteUserRepository(self.db)
         self.food_items = SqliteFoodItemRepository(self.db)
         self.orders = SqliteOrderRepository(self.db)
+        self.questions = SqliteQuestionRepository(self.db)
 
     def initialise(self):
         with self.db.connect() as conn:

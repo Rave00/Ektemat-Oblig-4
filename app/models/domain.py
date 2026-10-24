@@ -1,6 +1,6 @@
 """Domain classes for Ekte Mat Online. Plain data and rules: no Flask, no database code."""
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date, datetime, timedelta
 
 # Kinds of event a food item can be offered for (assignment C1; event types in the lab domain model).
@@ -241,7 +241,16 @@ class Order:
     first_replied_at: datetime | None = None    # first time it left "submitted" (plan 4, P4-3; NFR-19)
     customer_name: str = ""                     # filled in when orders are loaded, for the staff pages
     customer_email: str = ""
+    questions: list["Question"] = field(default_factory=list)       # plan 5: loaded with the order
     id: int | None = None
+
+    @property
+    def answered_questions(self):
+        return sum(1 for question in self.questions if question.answered)
+
+    @property
+    def waiting_questions(self):
+        return sum(1 for question in self.questions if not question.answered)
 
     @property
     def total_nok(self):
@@ -386,3 +395,66 @@ def date_filter(date_from_text, date_to_text):
     if dates[0] and dates[1] and dates[0] > dates[1]:
         return None, None, "The “from” date is after the “to” date."
     return dates[0], dates[1], ""
+
+
+# ---- questions on an order (plan 5, P5-1 to P5-5) ------------------------------------------------------------
+MAX_QUESTION, MAX_ANSWER = 1000, 2000          # ASSUMPTION: no source gives a length (P5-3)
+
+
+class QuestionError(ValueError):
+    """A question or answer the rules refuse. The message is shown on the page."""
+
+
+@dataclass
+class Question:
+    """One question about an order and, once staff reply, its one answer (P5-1; the table from plan 0)."""
+    order_id: int
+    customer_id: int
+    text: str
+    asked_at: datetime | None = None
+    answer: str = ""
+    answered_at: datetime | None = None
+    answered_by: int | None = None              # the staff member; customers only see "Ekte Mat" (P5-9)
+    order_number: str = ""                      # filled in for the staff list
+    customer_name: str = ""
+    answered_by_name: str = ""
+    id: int | None = None
+
+    @property
+    def answered(self):
+        return self.answered_at is not None
+
+
+def validate_question(text):
+    """The question as it will be stored (spaces at the ends removed), or QuestionError."""
+    text = (text or "").strip()
+    if not text:
+        raise QuestionError("Write your question.")
+    if len(text) > MAX_QUESTION:
+        raise QuestionError(f"A question can be at most {MAX_QUESTION} characters.")
+    return text
+
+
+def answer_question(question, text, staff_id, now):
+    """A copy of the question with its answer, or QuestionError. A question is answered only once (P5-5)."""
+    if question.answered:
+        raise QuestionError("This question has already been answered; the first answer is kept.")
+    text = (text or "").strip()
+    if not text:
+        raise QuestionError("Write an answer.")
+    if len(text) > MAX_ANSWER:
+        raise QuestionError(f"An answer can be at most {MAX_ANSWER} characters.")
+    return replace(question, answer=text, answered_at=now, answered_by=staff_id)
+
+
+def waiting_time(since, now):
+    """How long something has waited, as a person would say it: "12 minutes", "5 hours", "3 days"."""
+    minutes = int((now - since).total_seconds() // 60)
+    if minutes < 1:
+        return "less than a minute"
+    if minutes < 60:
+        return f"{minutes} minute{'' if minutes == 1 else 's'}"
+    if minutes < 48 * 60:
+        hours = minutes // 60
+        return f"{hours} hour{'' if hours == 1 else 's'}"
+    return f"{minutes // (24 * 60)} days"

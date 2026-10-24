@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Questions · Admin · Ekte Mat Online{% endblock %}
+{% block content %}
+<p class="crumbs"><a href="{{ url_for('admin.index') }}">Admin</a> / Questions</p>
+<h1>Questions</h1>
+
+<nav class="filters" aria-label="Show questions">
+  {% for code, name in shows.items() %}
+    <a href="{{ url_for('admin.questions', show=None if code == 'waiting' else code) }}"{% if show == code %} aria-current="page"{% endif %}>{{ name }} ({{ counts[code] }})</a>
+  {% endfor %}
+</nav>
+
+{% if questions %}
+  <div class="table-wrap">
+    <table class="table cart-table questions-table">
+      <thead>
+        <tr><th scope="col">Asked</th><th scope="col">Waited</th><th scope="col">Order</th><th scope="col">Customer</th>
+            <th scope="col">Question</th><th scope="col">Answer</th></tr>
+      </thead>
+      <tbody>
+        {% for q in questions %}
+          <tr data-question="{{ q.id }}">
+            <td data-label="Asked" class="num">{{ q.asked_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td data-label="Waited">{{ waited.get(q.id, '–') }}</td>
+            <td data-label="Order"><a href="{{ url_for('admin.order', order_id=q.order_id, _anchor='question-' ~ q.id) }}"><strong class="num">{{ q.order_number }}</strong></a></td>
+            <td data-label="Customer">{{ q.customer_name }}</td>
+            <td data-label="Question" class="question-cell">{{ q.text|truncate(140) }}</td>
+            <td data-label="Answer">
+              {% if q.answered %}<span class="small">{{ q.answered_by_name or 'Staff' }}, {{ q.answered_at.strftime('%Y-%m-%d %H:%M') }}</span>
+              {% else %}<a class="button secondary small-button" href="{{ url_for('admin.order', order_id=q.order_id, _anchor='question-' ~ q.id) }}">Answer</a>{% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <p class="muted">{{ 'No questions are waiting for an answer.' if show == 'waiting' else 'No questions here.' }}</p>
+{% endif %}
+{% endblock %}
